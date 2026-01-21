@@ -1,7 +1,7 @@
 <div align="center">
 
-<!-- Replace with your actual logo once created -->
-<img src="docs/assets/easytrack-logo.png" alt="EasyTrack Logo" width="200"/>
+<img width="515" height="175" alt="image" src="https://github.com/user-attachments/assets/0ee4d955-2a8a-408e-946f-eb0acb0232c7" />
+
 
 #  EasyTrack - Personal Finance Tracker
 
