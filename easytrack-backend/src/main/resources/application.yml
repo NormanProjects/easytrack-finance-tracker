@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: EasyTrack API
+
+  # Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/easytrack_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: easytrack_user
+    password: Mashia@1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+
+        format_sql: true
+
+  # Security (will configure later)
+  security:
+    user:
+      name: admin
+      password: admin123
+
+
+  mvc:
+    problemdetails:
+      enabled: true
+
+# JWT Configuration
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000
+
+# Server Configuration
+server:
+  port: 8080
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    displayRequestDuration: true
+
+# Logging Configuration
+logging:
+  level:
+    com.easytrack: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
