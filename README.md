@@ -374,7 +374,7 @@ For complete API specification, see [docs/02-design/api-specification.md](docs/0
 
 ---
 
-## 🗺️ Roadmap
+##  Roadmap
 
 ### Phase 1: MVP  (Current)
 - [x] User authentication (JWT)
@@ -424,12 +424,12 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-**Your Name** - [your.email@example.com](mailto:your.email@example.com)
+**Ntokozo Norman Mashia** - [ntokozonorman7@gmail.com]
 
 **Project Links:**
-- GitHub: [https://github.com/yourusername/easytrack-finance-tracker](https://github.com/yourusername/easytrack-finance-tracker)
+- GitHub: https://github.com/NormanProjects/easytrack-finance-tracker
 - Live Demo: [https://easytrack.com](https://easytrack.com)
-- LinkedIn: [https://linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
+- LinkedIn: www.linkedin.com/in/ntokozo-mashia-a152411a0
 - Portfolio: [https://yourportfolio.com](https://yourportfolio.com)
 
 ---
