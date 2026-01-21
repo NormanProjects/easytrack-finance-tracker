@@ -216,7 +216,7 @@ For detailed architecture diagrams, see [docs/02-design/system-architecture.md](
 
 #### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/easytrack-finance-tracker.git
+git clone https://github.com/NormanProjects/easytrack-finance-tracker.git
 cd easytrack-finance-tracker
 ```
 
@@ -400,7 +400,7 @@ For complete API specification, see [docs/02-design/api-specification.md](docs/0
 - [ ] Shared budgets (family accounts)
 - [ ] Mobile apps (iOS/Android)
 
-See the [open issues](https://github.com/yourusername/easytrack-finance-tracker/issues) for a full list of proposed features and known issues.
+See the [open issues](https://github.com/NormanProjects/easytrack-finance-tracker/issues) for a full list of proposed features and known issues.
 
 ---
 
