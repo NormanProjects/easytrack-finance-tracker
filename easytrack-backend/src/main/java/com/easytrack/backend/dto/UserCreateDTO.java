@@ -17,14 +17,16 @@ public class UserCreateDTO {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
+    @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name must not exceed 100 characters")
     private String firstName;
 
     @Size(max = 100, message = "Last name must not exceed 100 characters")
     private String lastName;
 
+    @Size(max = 500, message = "Profile picture URL must not exceed 500 characters")
     private String profilePictureUrl;
 }

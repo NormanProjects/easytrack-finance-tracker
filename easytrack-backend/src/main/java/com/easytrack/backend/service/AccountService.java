@@ -1,6 +1,7 @@
 package com.easytrack.backend.service;
 
 import com.easytrack.backend.entity.Account;
+import com.easytrack.backend.exception.ResourceNotFoundException;
 import com.easytrack.backend.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class AccountService {
 
     public Account updateAccount(Long id, Account accountDetails) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", id));
 
         account.setName(accountDetails.getName());
         account.setType(accountDetails.getType());
@@ -58,14 +59,14 @@ public class AccountService {
 
     public void updateAccountBalance(Long accountId, BigDecimal amount) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", accountId));
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
     }
 
     public void deleteAccount(Long id) {
         if (!accountRepository.existsById(id)) {
-            throw new RuntimeException("Account not found");
+            throw new ResourceNotFoundException("Account", "id", id);
         }
         accountRepository.deleteById(id);
     }

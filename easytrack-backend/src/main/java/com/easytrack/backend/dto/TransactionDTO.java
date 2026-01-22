@@ -27,7 +27,7 @@ public class TransactionDTO {
     @NotNull(message = "Category ID is required")
     private Long categoryId;
 
-    @NotBlank(message = "Transaction type is required")
+    @NotNull(message = "Transaction type is required")
     private Transaction.TransactionType type; // INCOME or EXPENSE
 
     @NotNull(message = "Amount is required")

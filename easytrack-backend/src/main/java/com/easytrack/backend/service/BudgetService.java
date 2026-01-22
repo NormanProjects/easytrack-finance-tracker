@@ -1,6 +1,8 @@
 package com.easytrack.backend.service;
 
 import com.easytrack.backend.entity.Budget;
+import com.easytrack.backend.exception.DuplicateResourceException;
+import com.easytrack.backend.exception.ResourceNotFoundException;
 import com.easytrack.backend.repository.BudgetRepository;
 import com.easytrack.backend.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,7 @@ public class BudgetService {
         );
 
         if (existing.isPresent()) {
-            throw new RuntimeException("Budget already exists for this category and period");
+            throw new DuplicateResourceException("Budget already exists for this category and period");
         }
 
         // Calculate spent amount
@@ -62,7 +64,7 @@ public class BudgetService {
 
     public Budget updateBudget(Long id, Budget budgetDetails) {
         Budget budget = budgetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Budget not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Budget", "id", id));
 
         budget.setCategory(budgetDetails.getCategory());
         budget.setAmount(budgetDetails.getAmount());
@@ -79,7 +81,7 @@ public class BudgetService {
 
     public void deleteBudget(Long id) {
         if (!budgetRepository.existsById(id)) {
-            throw new RuntimeException("Budget not found");
+            throw new ResourceNotFoundException("Budget", "id", id);
         }
         budgetRepository.deleteById(id);
     }
@@ -104,7 +106,7 @@ public class BudgetService {
 
     public BigDecimal getBudgetProgress(Long budgetId) {
         Budget budget = budgetRepository.findById(budgetId)
-                .orElseThrow(() -> new RuntimeException("Budget not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Budget", "id", budgetId));
 
         if (budget.getAmount().compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;

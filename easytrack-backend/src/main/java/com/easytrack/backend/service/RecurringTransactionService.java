@@ -2,6 +2,7 @@ package com.easytrack.backend.service;
 
 import com.easytrack.backend.entity.RecurringTransaction;
 import com.easytrack.backend.entity.Transaction;
+import com.easytrack.backend.exception.ResourceNotFoundException;
 import com.easytrack.backend.repository.RecurringTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class RecurringTransactionService {
     private final TransactionService transactionService;
 
     public RecurringTransaction createRecurringTransaction(RecurringTransaction recurringTransaction) {
-
+        // Set next occurrence if not set
         if (recurringTransaction.getNextOccurrence() == null) {
             recurringTransaction.setNextOccurrence(recurringTransaction.getStartDate());
         }
@@ -45,7 +46,7 @@ public class RecurringTransactionService {
 
     public RecurringTransaction updateRecurringTransaction(Long id, RecurringTransaction details) {
         RecurringTransaction recurringTransaction = recurringTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recurring transaction not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Recurring Transaction", "id", id));
 
         recurringTransaction.setAccount(details.getAccount());
         recurringTransaction.setCategory(details.getCategory());
@@ -63,7 +64,7 @@ public class RecurringTransactionService {
 
     public void deleteRecurringTransaction(Long id) {
         if (!recurringTransactionRepository.existsById(id)) {
-            throw new RuntimeException("Recurring transaction not found");
+            throw new ResourceNotFoundException("Recurring Transaction", "id", id);
         }
         recurringTransactionRepository.deleteById(id);
     }

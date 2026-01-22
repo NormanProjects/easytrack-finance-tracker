@@ -1,6 +1,8 @@
 package com.easytrack.backend.service;
 
 import com.easytrack.backend.entity.User;
+import com.easytrack.backend.exception.DuplicateResourceException;
+import com.easytrack.backend.exception.ResourceNotFoundException;
 import com.easytrack.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ public class UserService {
 
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("User", "email", user.getEmail());
         }
         return userRepository.save(user);
     }
@@ -38,7 +40,7 @@ public class UserService {
 
     public User updateUser(Long id, User userDetails) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
         user.setFirstName(userDetails.getFirstName());
         user.setLastName(userDetails.getLastName());
@@ -49,14 +51,14 @@ public class UserService {
 
     public void updateLastLogin(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User", "id", id);
         }
         userRepository.deleteById(id);
     }

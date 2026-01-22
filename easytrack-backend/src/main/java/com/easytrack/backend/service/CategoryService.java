@@ -1,6 +1,7 @@
 package com.easytrack.backend.service;
 
 import com.easytrack.backend.entity.Category;
+import com.easytrack.backend.exception.ResourceNotFoundException;
 import com.easytrack.backend.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class CategoryService {
 
     public Category updateCategory(Long id, Category categoryDetails) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
 
         category.setName(categoryDetails.getName());
         category.setType(categoryDetails.getType());
@@ -54,7 +55,7 @@ public class CategoryService {
 
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Category not found");
+            throw new ResourceNotFoundException("Category", "id", id);
         }
         categoryRepository.deleteById(id);
     }

@@ -2,6 +2,9 @@ package com.easytrack.backend.service;
 
 import com.easytrack.backend.entity.Account;
 import com.easytrack.backend.entity.Transaction;
+import com.easytrack.backend.exception.BadRequestException;
+import com.easytrack.backend.exception.InsufficientBalanceException;
+import com.easytrack.backend.exception.ResourceNotFoundException;
 import com.easytrack.backend.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,12 +24,30 @@ public class TransactionService {
     private final AccountService accountService;
 
     public Transaction createTransaction(Transaction transaction) {
+        // Validate that transaction has required relationships
+        if (transaction.getAccount() == null) {
+            throw new BadRequestException("Account is required for transaction");
+        }
+        if (transaction.getUser() == null) {
+            throw new BadRequestException("User is required for transaction");
+        }
+        if (transaction.getCategory() == null) {
+            throw new BadRequestException("Category is required for transaction");
+        }
+
         // Update account balance
         Account account = accountService.getAccountById(transaction.getAccount().getId())
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", transaction.getAccount().getId()));
 
         BigDecimal amount = transaction.getAmount();
         if (transaction.getType() == Transaction.TransactionType.EXPENSE) {
+            // Check if account has sufficient balance
+            if (account.getBalance().compareTo(amount) < 0) {
+                throw new InsufficientBalanceException(
+                        "Insufficient balance. Available: " + account.getBalance() +
+                                " ZAR, Required: " + amount + " ZAR"
+                );
+            }
             amount = amount.negate();
         }
 
@@ -65,7 +86,7 @@ public class TransactionService {
 
     public Transaction updateTransaction(Long id, Transaction transactionDetails) {
         Transaction transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction", "id", id));
 
         // Revert old transaction from account balance
         BigDecimal oldAmount = transaction.getAmount();
@@ -84,9 +105,18 @@ public class TransactionService {
         transaction.setNotes(transactionDetails.getNotes());
         transaction.setReceiptUrl(transactionDetails.getReceiptUrl());
 
-        // Apply new transaction to account balance
+        // Apply new transaction to account balance with balance check
+        Account account = accountService.getAccountById(transaction.getAccount().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", transaction.getAccount().getId()));
+
         BigDecimal newAmount = transaction.getAmount();
         if (transaction.getType() == Transaction.TransactionType.EXPENSE) {
+            if (account.getBalance().compareTo(newAmount) < 0) {
+                throw new InsufficientBalanceException(
+                        "Insufficient balance. Available: " + account.getBalance() +
+                                " ZAR, Required: " + newAmount + " ZAR"
+                );
+            }
             newAmount = newAmount.negate();
         }
         accountService.updateAccountBalance(transaction.getAccount().getId(), newAmount);
@@ -96,7 +126,7 @@ public class TransactionService {
 
     public void deleteTransaction(Long id) {
         Transaction transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction", "id", id));
 
         // Revert transaction from account balance
         BigDecimal amount = transaction.getAmount();
