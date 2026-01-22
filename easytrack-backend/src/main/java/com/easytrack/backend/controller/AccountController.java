@@ -1,7 +1,11 @@
 package com.easytrack.backend.controller;
 
+import com.easytrack.backend.dto.AccountDTO;
 import com.easytrack.backend.entity.Account;
+import com.easytrack.backend.entity.User;
+import com.easytrack.backend.mapper.AccountMapper;
 import com.easytrack.backend.service.AccountService;
+import com.easytrack.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -20,38 +25,52 @@ import java.util.List;
 public class AccountController {
 
     private final AccountService accountService;
+    private final UserService userService;
+    private final AccountMapper accountMapper;
 
     @PostMapping
     @Operation(summary = "Create a new account")
-    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) {
+    public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
+        User user = userService.getUserById(accountDTO.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Account account = accountMapper.toEntity(accountDTO, user);
         Account createdAccount = accountService.createAccount(account);
-        return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
+        return new ResponseEntity<>(accountMapper.toDTO(createdAccount), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get account by ID")
-    public ResponseEntity<Account> getAccountById(@PathVariable Long id) {
+    public ResponseEntity<AccountDTO> getAccountById(@PathVariable Long id) {
         return accountService.getAccountById(id)
-                .map(ResponseEntity::ok)
+                .map(account -> ResponseEntity.ok(accountMapper.toDTO(account)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
     @Operation(summary = "Get all accounts")
-    public ResponseEntity<List<Account>> getAllAccounts() {
-        return ResponseEntity.ok(accountService.getAllAccounts());
+    public ResponseEntity<List<AccountDTO>> getAllAccounts() {
+        List<AccountDTO> accounts = accountService.getAllAccounts().stream()
+                .map(accountMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(accounts);
     }
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get accounts by user ID")
-    public ResponseEntity<List<Account>> getAccountsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(accountService.getAccountsByUserId(userId));
+    public ResponseEntity<List<AccountDTO>> getAccountsByUserId(@PathVariable Long userId) {
+        List<AccountDTO> accounts = accountService.getAccountsByUserId(userId).stream()
+                .map(accountMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(accounts);
     }
 
     @GetMapping("/user/{userId}/active")
     @Operation(summary = "Get active accounts by user ID")
-    public ResponseEntity<List<Account>> getActiveAccountsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(accountService.getActiveAccountsByUserId(userId));
+    public ResponseEntity<List<AccountDTO>> getActiveAccountsByUserId(@PathVariable Long userId) {
+        List<AccountDTO> accounts = accountService.getActiveAccountsByUserId(userId).stream()
+                .map(accountMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(accounts);
     }
 
     @GetMapping("/user/{userId}/total-balance")
@@ -62,9 +81,12 @@ public class AccountController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update account")
-    public ResponseEntity<Account> updateAccount(@PathVariable Long id, @Valid @RequestBody Account account) {
+    public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long id, @Valid @RequestBody AccountDTO accountDTO) {
+        Account account = accountService.getAccountById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        accountMapper.updateEntityFromDTO(accountDTO, account);
         Account updatedAccount = accountService.updateAccount(id, account);
-        return ResponseEntity.ok(updatedAccount);
+        return ResponseEntity.ok(accountMapper.toDTO(updatedAccount));
     }
 
     @DeleteMapping("/{id}")

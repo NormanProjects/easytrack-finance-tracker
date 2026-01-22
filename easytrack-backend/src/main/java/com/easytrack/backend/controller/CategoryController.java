@@ -1,7 +1,11 @@
 package com.easytrack.backend.controller;
 
+import com.easytrack.backend.dto.CategoryDTO;
 import com.easytrack.backend.entity.Category;
+import com.easytrack.backend.entity.User;
+import com.easytrack.backend.mapper.CategoryMapper;
 import com.easytrack.backend.service.CategoryService;
+import com.easytrack.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -19,47 +24,64 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final UserService userService;
+    private final CategoryMapper categoryMapper;
 
     @PostMapping
     @Operation(summary = "Create a new category")
-    public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) {
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
+        User user = userService.getUserById(categoryDTO.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Category category = categoryMapper.toEntity(categoryDTO, user);
         Category createdCategory = categoryService.createCategory(category);
-        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+        return new ResponseEntity<>(categoryMapper.toDTO(createdCategory), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get category by ID")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
         return categoryService.getCategoryById(id)
-                .map(ResponseEntity::ok)
+                .map(category -> ResponseEntity.ok(categoryMapper.toDTO(category)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
     @Operation(summary = "Get all categories")
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
+    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
+        List<CategoryDTO> categories = categoryService.getAllCategories().stream()
+                .map(categoryMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get categories by user ID")
-    public ResponseEntity<List<Category>> getCategoriesByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(categoryService.getCategoriesByUserId(userId));
+    public ResponseEntity<List<CategoryDTO>> getCategoriesByUserId(@PathVariable Long userId) {
+        List<CategoryDTO> categories = categoryService.getCategoriesByUserId(userId).stream()
+                .map(categoryMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/user/{userId}/type/{type}")
     @Operation(summary = "Get categories by user ID and type")
-    public ResponseEntity<List<Category>> getCategoriesByUserIdAndType(
+    public ResponseEntity<List<CategoryDTO>> getCategoriesByUserIdAndType(
             @PathVariable Long userId,
             @PathVariable Category.CategoryType type) {
-        return ResponseEntity.ok(categoryService.getCategoriesByUserIdAndType(userId, type));
+        List<CategoryDTO> categories = categoryService.getCategoriesByUserIdAndType(userId, type).stream()
+                .map(categoryMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categories);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update category")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @Valid @RequestBody Category category) {
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
+        Category category = categoryService.getCategoryById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        categoryMapper.updateEntityFromDTO(categoryDTO, category);
         Category updatedCategory = categoryService.updateCategory(id, category);
-        return ResponseEntity.ok(updatedCategory);
+        return ResponseEntity.ok(categoryMapper.toDTO(updatedCategory));
     }
 
     @DeleteMapping("/{id}")
