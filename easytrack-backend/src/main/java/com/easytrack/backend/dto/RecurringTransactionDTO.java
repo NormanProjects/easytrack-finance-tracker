@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class RecurringTransactionDTO {
     private Long id;
 
-    @NotNull(message = "User ID is required")
+    //@NotNull(message = "User ID is required")
     private Long userId;
 
     @NotNull(message = "Account ID is required")

@@ -14,25 +14,25 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryDTO {
-    private Long id;
+ private Long id;
 
-    @NotNull(message = "User ID is required")
-    private Long userId;
+ // Remove @NotNull - userId comes from JWT now
+ private Long userId;
 
-    @NotBlank(message = "Category name is required")
-    @Size(max = 100, message = "Category name must not exceed 100 characters")
-    private String name;
+ @NotBlank(message = "Category name is required")
+ @Size(max = 100, message = "Category name must not exceed 100 characters")
+ private String name;
 
-    @NotBlank(message = "Category type is required")
-    private Category.CategoryType type; // INCOME or EXPENSE
+ @NotNull(message = "Category type is required")
+ private Category.CategoryType type; // INCOME or EXPENSE
 
-    @Size(max = 50, message = "Icon must not exceed 50 characters")
-    private String icon;
+ @Size(max = 50, message = "Icon must not exceed 50 characters")
+ private String icon;
 
-    @Size(max = 20, message = "Color must not exceed 20 characters")
-    private String color;
+ @Size(max = 20, message = "Color must not exceed 20 characters")
+ private String color;
 
-    private Boolean isDefault;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+ private Boolean isDefault;
+ private LocalDateTime createdAt;
+ private LocalDateTime updatedAt;
 }

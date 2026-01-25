@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class TransactionDTO {
     private Long id;
 
-    @NotNull(message = "User ID is required")
+   // @NotNull(message = "User ID is required")
     private Long userId;
 
     @NotNull(message = "Account ID is required")

@@ -1,78 +1,51 @@
 package com.easytrack.backend.controller;
 
-import com.easytrack.backend.dto.UserCreateDTO;
 import com.easytrack.backend.dto.UserDTO;
 import com.easytrack.backend.dto.UserUpdateDTO;
 import com.easytrack.backend.entity.User;
 import com.easytrack.backend.mapper.UserMapper;
 import com.easytrack.backend.service.UserService;
+import com.easytrack.backend.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/profile")
 @RequiredArgsConstructor
-@Tag(name = "User Management", description = "APIs for managing users")
+@Tag(name = "User Profile", description = "APIs for managing user profile")
 public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
-
-    @PostMapping
-    @Operation(summary = "Create a new user")
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
-        User user = userMapper.toEntity(userCreateDTO);
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(userMapper.toDTO(createdUser), HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(user -> ResponseEntity.ok(userMapper.toDTO(user)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/email/{email}")
-    @Operation(summary = "Get user by email")
-    public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
-        return userService.getUserByEmail(email)
-                .map(user -> ResponseEntity.ok(userMapper.toDTO(user)))
-                .orElse(ResponseEntity.notFound().build());
-    }
+    private final SecurityUtil securityUtil;
 
     @GetMapping
-    @Operation(summary = "Get all users")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers().stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(users);
+    @Operation(summary = "Get current user profile")
+    public ResponseEntity<UserDTO> getCurrentUserProfile() {
+        User user = securityUtil.getAuthenticatedUser();
+        return ResponseEntity.ok(userMapper.toDTO(user));
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update user")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-        User user = userService.getUserById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    @PutMapping
+    @Operation(summary = "Update current user profile")
+    public ResponseEntity<UserDTO> updateCurrentUserProfile(@Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+        User user = securityUtil.getAuthenticatedUser();
+
         userMapper.updateEntityFromDTO(userUpdateDTO, user);
-        User updatedUser = userService.updateUser(id, user);
+        User updatedUser = userService.updateUser(user.getId(), user);
         return ResponseEntity.ok(userMapper.toDTO(updatedUser));
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete user")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    @DeleteMapping
+    @Operation(summary = "Delete current user account")
+    public ResponseEntity<Void> deleteCurrentUserAccount() {
+        Long userId = securityUtil.getAuthenticatedUserId();
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 }

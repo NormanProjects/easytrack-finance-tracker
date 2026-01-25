@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class BudgetDTO {
     private Long id;
 
-    @NotNull(message = "User ID is required")
+    //@NotNull(message = "User ID is required")
     private Long userId;
 
     @NotNull(message = "Category ID is required")
