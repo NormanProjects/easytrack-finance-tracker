@@ -1,0 +1,175 @@
+:host {
+  display: block;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Gradient Text - Exact match to reference */
+.gradient-text-new {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero Buttons */
+.btn-hero-primary-new {
+  background: #00FF94;
+  color: #0A1628;
+  font-weight: 600;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.btn-hero-primary-new:hover {
+  background: #00e085;
+}
+
+.btn-hero-secondary-new {
+  background: transparent;
+  color: white;
+  font-weight: 600;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-hero-secondary-new:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Feature Cards - Exact match to reference */
+.feature-card-new {
+  background: #0F1F3A;
+  border: 1px solid #1e293b;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  transition: all 0.3s ease;
+}
+
+.feature-card-new:hover {
+  transform: translateY(-4px);
+}
+
+.feature-icon-new {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* FAQ Styles - Exact match to reference */
+.faq-item-new {
+  border-color: #1e293b;
+}
+
+.faq-item-new.border-b {
+  border-bottom: 1px solid #1e293b;
+}
+
+.faq-question-new {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  text-align: left;
+  gap: 1rem;
+}
+
+.faq-question-new:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.faq-chevron {
+  flex-shrink: 0;
+  color: #94A3B8;
+  transition: transform 0.3s ease;
+}
+
+.faq-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.faq-answer-new {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 2rem;
+}
+
+.faq-answer-new.open {
+  max-height: 500px;
+  padding: 0 2rem 1.5rem 2rem;
+}
+
+/* CTA Card - Exact match to reference */
+.cta-card-new {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2a5470 100%);
+  border-radius: 2rem;
+  padding: 4rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-btn-new {
+  background: white;
+  color: #0A1628;
+  font-weight: 600;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.cta-btn-new:hover {
+  background: #f0f0f0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gradient-text-new {
+    font-size: 3rem;
+  }
+  
+  .btn-hero-primary-new,
+  .btn-hero-secondary-new {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .feature-card-new {
+    padding: 2rem;
+  }
+  
+  .cta-card-new {
+    padding: 3rem 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .gradient-text-new {
+    font-size: 2.5rem;
+  }
+}

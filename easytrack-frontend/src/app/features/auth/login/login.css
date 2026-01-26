@@ -1,0 +1,177 @@
+
+:host {
+  display: block;
+}
+
+/* Background gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.min-h-screen {
+  background: linear-gradient(-45deg, #0A1628, #0F1F3A, #0A1628, #1A2942);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Card entrance animation */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-\[--tw-prose-body\] {
+  animation: slideInUp 0.5s ease-out;
+}
+
+/* Input focus effects */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+input {
+  transition: all 0.2s ease;
+}
+
+/* Logo pulse effect */
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+img {
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+/* Button loading state */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Error message shake */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.error-message {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Input validation states */
+input.ng-invalid.ng-touched {
+  border-color: #EF4444;
+  animation: shake 0.3s ease-in-out;
+}
+
+input.ng-valid.ng-touched {
+  border-color: #00FF94;
+}
+
+/* Link hover effect */
+a {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #00FF94;
+  transition: width 0.3s ease;
+}
+
+a:hover::after {
+  width: 100%;
+}
+
+/* Button states */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 255, 148, 0.2);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Form container glow effect */
+.bg-\[\#1A2942\] {
+  position: relative;
+}
+
+.bg-\[\#1A2942\]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(135deg, #00FF94, transparent, #00FF94);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bg-\[\#1A2942\]:hover::before {
+  opacity: 0.3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .text-3xl {
+    font-size: 1.875rem;
+  }
+  
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

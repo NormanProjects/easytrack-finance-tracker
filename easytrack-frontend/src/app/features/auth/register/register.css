@@ -1,0 +1,267 @@
+
+:host {
+  display: block;
+}
+
+/* Background gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.min-h-screen {
+  background: linear-gradient(-45deg, #0A1628, #0F1F3A, #0A1628, #1A2942);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Staggered form field animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mb-4:nth-child(1) {
+  animation: fadeInUp 0.4s ease-out 0.1s backwards;
+}
+
+.mb-4:nth-child(2) {
+  animation: fadeInUp 0.4s ease-out 0.2s backwards;
+}
+
+.mb-4:nth-child(3) {
+  animation: fadeInUp 0.4s ease-out 0.3s backwards;
+}
+
+.mb-4:nth-child(4) {
+  animation: fadeInUp 0.4s ease-out 0.4s backwards;
+}
+
+.mb-6:nth-child(5) {
+  animation: fadeInUp 0.4s ease-out 0.5s backwards;
+}
+
+/* Input focus effects */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+input {
+  transition: all 0.2s ease;
+}
+
+/* Input validation animations */
+input.ng-invalid.ng-touched {
+  border-color: #EF4444;
+  animation: shake 0.3s ease-in-out;
+}
+
+input.ng-valid.ng-touched {
+  border-color: #00FF94;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+/* Password strength indicator */
+input[type="password"]:focus {
+  box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1);
+}
+
+/* Logo entrance animation */
+@keyframes logoEntrance {
+  from {
+    opacity: 0;
+    transform: scale(0.8) rotate(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+img {
+  animation: logoEntrance 0.6s ease-out;
+}
+
+/* Button loading animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Success message */
+@keyframes successPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 148, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 255, 148, 0);
+  }
+}
+
+.success-message {
+  animation: successPulse 1s ease-in-out;
+}
+
+/* Error message */
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-8px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(8px);
+  }
+}
+
+.error-message {
+  animation: errorShake 0.5s ease-in-out;
+}
+
+/* Link effects */
+a {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #00FF94;
+  transition: width 0.3s ease;
+}
+
+a:hover::after {
+  width: 100%;
+}
+
+/* Button hover effects */
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 255, 148, 0.2);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Form card glow on hover */
+.bg-\[\#1A2942\] {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.bg-\[\#1A2942\]:hover {
+  box-shadow: 0 20px 40px rgba(0, 255, 148, 0.1);
+}
+
+/* Progress indicator for password */
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.password-strength-weak {
+  background-color: #EF4444;
+  animation: progress 0.5s ease-out;
+}
+
+.password-strength-medium {
+  background-color: #F59E0B;
+  animation: progress 0.5s ease-out;
+}
+
+.password-strength-strong {
+  background-color: #00FF94;
+  animation: progress 0.5s ease-out;
+}
+
+/* Label hover effect */
+label {
+  transition: color 0.2s ease;
+}
+
+input:focus + label {
+  color: #00FF94;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .text-3xl {
+    font-size: 1.875rem;
+  }
+  
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Form container animation */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-\[\#1A2942\] {
+  animation: slideInUp 0.5s ease-out;
+}

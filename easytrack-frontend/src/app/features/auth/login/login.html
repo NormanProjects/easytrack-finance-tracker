@@ -1,1 +1,84 @@
-<p>login works!</p>
+<<div class="min-h-screen flex items-center justify-center bg-[#0A1628] px-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-3 mb-4">
+        <img src="assets/images/logo.png" alt="EasyTrack Logo" class="h-16 w-auto">
+      </div>
+      <p class="text-[#94A3B8]">Sign in to your account</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="bg-[#1A2942] rounded-xl p-6 shadow-lg border border-gray-800">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="bg-red-500 bg-opacity-10 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-4">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Email Field -->
+        <div class="mb-4">
+          <label class="block text-[#94A3B8] text-sm font-semibold mb-2">Email</label>
+          <input 
+            type="email" 
+            formControlName="email"
+            placeholder="your@email.com"
+            class="w-full bg-[#0A1628] border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00FF94] transition-colors"
+            [class.border-red-500]="email?.invalid && email?.touched"
+            [class.border-gray-700]="!email?.invalid || !email?.touched"
+          />
+          <p *ngIf="email?.invalid && email?.touched" class="text-red-500 text-sm mt-1">
+            <span *ngIf="email?.errors?.['required']">Email is required</span>
+            <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+          </p>
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-6">
+          <label class="block text-[#94A3B8] text-sm font-semibold mb-2">Password</label>
+          <input 
+            type="password" 
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full bg-[#0A1628] border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00FF94] transition-colors"
+            [class.border-red-500]="password?.invalid && password?.touched"
+            [class.border-gray-700]="!password?.invalid || !password?.touched"
+          />
+          <p *ngIf="password?.invalid && password?.touched" class="text-red-500 text-sm mt-1">
+            <span *ngIf="password?.errors?.['required']">Password is required</span>
+            <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+          </p>
+        </div>
+
+        <!-- Forgot Password -->
+        <div class="text-right mb-6">
+          <a href="#" class="text-[#00FF94] hover:underline text-sm">Forgot password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full bg-[#00FF94] text-[#0A1628] font-semibold px-6 py-3 rounded-lg hover:bg-[#00CC76] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="loading || loginForm.invalid"
+        >
+          <span *ngIf="!loading">Sign In</span>
+          <span *ngIf="loading" class="flex items-center justify-center">
+            <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Signing in...
+          </span>
+        </button>
+      </form>
+
+      <!-- Register Link -->
+      <div class="text-center mt-6">
+        <p class="text-[#94A3B8]">
+          Don't have an account? 
+          <a routerLink="/auth/register" class="text-[#00FF94] hover:underline font-semibold">Sign up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
