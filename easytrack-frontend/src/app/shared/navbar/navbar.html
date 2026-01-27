@@ -1,1 +1,20 @@
-<p>navbar works!</p>
+<!-- src/app/shared/navbar/navbar.component.html -->
+<nav class="navbar">
+  <div class="nav-content">
+    <div class="nav-logo">
+      <img src="assets/images/logo.png" alt="EasyTrack Logo" class="logo-img">
+      <span class="logo-text">EasyTrack</span>
+    </div>
+    
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    
+    <div class="nav-actions">
+      <a routerLink="/auth/login" class="nav-login">Log in</a>
+      <a routerLink="/auth/register" class="nav-signup">Get started</a>
+    </div>
+  </div>
+</nav>

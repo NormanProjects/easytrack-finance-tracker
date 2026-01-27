@@ -1,56 +1,33 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth';
+//import { AuthService } from '../../../core/services/auth';
+import { Navbar } from '../../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule,RouterLink, FormsModule, Navbar],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
 export class LoginComponent {
-  loginForm: FormGroup;
-  loading = false;
-  errorMessage = '';
+  email: string = '';
+  password: string = '';
+  rememberMe: boolean = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+  constructor(private router: Router) {}
+
+  onSubmit() {
+    // TODO: Implement actual authentication logic
+    console.log('Login attempt:', {
+      email: this.email,
+      password: this.password,
+      rememberMe: this.rememberMe
     });
-  }
-
-  onSubmit(): void {
-    if (this.loginForm.invalid) {
-      return;
-    }
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Invalid email or password';
-        this.loading = false;
-      }
-    });
-  }
-
-  get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
+    
+    // For now, just navigate to dashboard
+    // this.router.navigate(['/dashboard']);
   }
 }

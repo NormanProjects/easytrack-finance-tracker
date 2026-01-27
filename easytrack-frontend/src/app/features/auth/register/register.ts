@@ -1,70 +1,45 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
+import { Navbar } from '../../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, Navbar],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
 export class Register {
   
-  registerForm: FormGroup;
-  loading = false;
-  errorMessage = '';
+   name: string = '';
+  email: string = '';
+  password: string = '';
+  confirmPassword: string = '';
+  agreeToTerms: boolean = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
-    this.registerForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, { validators: this.passwordMatchValidator });
-  }
+  constructor(private router: Router) {}
 
-  passwordMatchValidator(form: FormGroup) {
-    const password = form.get('password');
-    const confirmPassword = form.get('confirmPassword');
-    
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      confirmPassword.setErrors({ mismatch: true });
-      return { mismatch: true };
-    }
-    return null;
-  }
-
-  onSubmit(): void {
-    if (this.registerForm.invalid) {
+  onSubmit() {
+    if (this.password !== this.confirmPassword) {
+      alert('Passwords do not match!');
       return;
     }
 
-    this.loading = true;
-    this.errorMessage = '';
+    if (!this.agreeToTerms) {
+      alert('Please agree to the Terms of Service and Privacy Policy');
+      return;
+    }
 
-    const { confirmPassword, ...registerData } = this.registerForm.value;
-
-    this.authService.register(registerData).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
-        this.loading = false;
-      }
+    // TODO: Implement actual registration logic
+    console.log('Registration attempt:', {
+      name: this.name,
+      email: this.email,
+      password: this.password
     });
+    
+    // For now, just navigate to login
+    // this.router.navigate(['/auth/login']);
   }
-
-  get firstName() { return this.registerForm.get('firstName'); }
-  get lastName() { return this.registerForm.get('lastName'); }
-  get email() { return this.registerForm.get('email'); }
-  get password() { return this.registerForm.get('password'); }
-  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
 }
