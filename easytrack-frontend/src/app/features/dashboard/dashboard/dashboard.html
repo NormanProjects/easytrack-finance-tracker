@@ -1,7 +1,19 @@
-<!-- src/app/features/dashboard/dashboard.component.html -->
-<div class="min-h-screen bg-[#0A1628] flex items-center justify-center">
-  <div class="text-center">
-    <h1 class="text-4xl font-bold text-white mb-4">Dashboard works!</h1>
-    <p class="text-[#94A3B8] text-xl">Welcome to EasyTrack</p>
+
+<div class="dashboard">
+  <!-- Sidebar -->
+  <app-sidebar 
+    [isOpen]="sidebarOpen"
+    (closeSidebar)="toggleSidebar()"
+  ></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="dashboard-main" [class.sidebar-open]="sidebarOpen">
+    <!-- Header -->
+    <app-header 
+      [user]="currentUser"
+      (toggleSidebar)="toggleSidebar()"
+      (logout)="onLogout()"
+    ></app-header>
+
   </div>
 </div>
