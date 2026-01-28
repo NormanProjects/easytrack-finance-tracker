@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-//import { AuthService } from '../../../core/services/auth';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth';
 import { Navbar } from '../../../shared/navbar/navbar';
 
 @Component({
@@ -16,18 +16,45 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
   rememberMe: boolean = false;
+  loading: boolean = false;
+  errorMessage: string = '';
+  returnUrl: string = '/dashboard';
 
-  constructor(private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    // Get return url from route parameters or default to '/dashboard'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+  }
 
   onSubmit() {
-    // TODO: Implement actual authentication logic
-    console.log('Login attempt:', {
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Please fill in all fields';
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.authService.login({
       email: this.email,
       password: this.password,
       rememberMe: this.rememberMe
+    }).subscribe({
+      next: (response) => {
+        console.log('Login successful:', response);
+        this.router.navigate([this.returnUrl]);
+      },
+      error: (error) => {
+        console.error('Login failed:', error);
+        this.errorMessage = error.message || 'Login failed. Please try again.';
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      }
     });
-    
-    // For now, just navigate to dashboard
-    // this.router.navigate(['/dashboard']);
   }
 }

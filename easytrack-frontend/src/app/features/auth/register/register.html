@@ -8,6 +8,13 @@
         <h1 class="auth-title">Create your account</h1>
         <p class="auth-subtitle">Start tracking your finances today</p>
       </div>
+           
+          <div class="error-message" *ngIf="errorMessage">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <span>{{ errorMessage }}</span>
+          </div>
       
       <form class="auth-form" (ngSubmit)="onSubmit()">
         <div class="form-group">
@@ -44,8 +51,9 @@
             name="password"
             [(ngModel)]="password"
             class="form-input" 
-            placeholder="Create a password"
+            placeholder="Create a password (min. 8 characters)"
             required
+            minlength="8"
           >
         </div>
         
@@ -67,9 +75,18 @@
           <span>I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a></span>
         </label>
         
-        <button type="submit" class="auth-button">Secure My Data Now</button>
+        <button type="submit" class="auth-button" [disabled]="!agreeToTerms || loading">
+            <span *ngIf="!loading">Create account</span>
+            <span *ngIf="loading" class="loading-spinner">
+              <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Creating account...
+            </span>
+          </button>
       </form>
-      
+
       <div class="auth-divider">
         <span>Already have an account?</span>
       </div>

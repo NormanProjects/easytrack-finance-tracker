@@ -9,6 +9,14 @@
         <p class="auth-subtitle">Log in to your EasyTrack account</p>
       </div>
       
+      <!-- Error message -->
+      <div class="error-message" *ngIf="errorMessage">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+      
       <form class="auth-form" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label for="email" class="form-label">Email</label>
@@ -19,6 +27,7 @@
             [(ngModel)]="email"
             class="form-input" 
             placeholder="you@example.com"
+            [disabled]="loading"
             required
           >
         </div>
@@ -32,19 +41,29 @@
             [(ngModel)]="password"
             class="form-input" 
             placeholder="Enter your password"
+            [disabled]="loading"
             required
           >
         </div>
         
         <div class="form-footer">
           <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" [disabled]="loading">
             <span>Remember me</span>
           </label>
           <a href="#" class="forgot-link">Forgot password?</a>
         </div>
         
-        <button type="submit" class="auth-button">Log in</button>
+        <button type="submit" class="auth-button" [disabled]="loading">
+          <span *ngIf="!loading">Log in</span>
+          <span *ngIf="loading" class="loading-spinner">
+            <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Logging in...
+          </span>
+        </button>
       </form>
       
       <div class="auth-divider">

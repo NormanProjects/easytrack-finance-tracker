@@ -3,6 +3,23 @@
   background: #0A1628;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background gradient effect */
+.auth-page::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(0, 255, 148, 0.05) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .auth-container {
@@ -13,15 +30,26 @@
   padding: 2rem;
   margin-top: 80px;
   margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-card {
   width: 100%;
   max-width: 440px;
-  background: #0F1F3A;
-  border: 1px solid #1e293b;
+  background: rgba(15, 31, 58, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.5rem;
   padding: 3rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
 .auth-header {
@@ -34,6 +62,7 @@
   font-weight: 700;
   color: white;
   margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
 }
 
 .auth-subtitle {
@@ -62,12 +91,14 @@
 .form-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  background: #0A1628;
-  border: 1px solid #1e293b;
+  background: rgba(10, 22, 40, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
   color: white;
   font-size: 1rem;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .form-input::placeholder {
@@ -77,7 +108,8 @@
 .form-input:focus {
   outline: none;
   border-color: #00FF94;
-  box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 255, 148, 0.1), 0 4px 12px rgba(0, 255, 148, 0.2);
+  background: rgba(10, 22, 40, 0.95);
 }
 
 .checkbox-label {
@@ -88,6 +120,11 @@
   color: #94A3B8;
   cursor: pointer;
   line-height: 1.5;
+  transition: color 0.2s;
+}
+
+.checkbox-label:hover {
+  color: white;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -96,6 +133,7 @@
   cursor: pointer;
   margin-top: 2px;
   flex-shrink: 0;
+  accent-color: #00FF94;
 }
 
 .terms-label {
@@ -105,7 +143,7 @@
 .terms-link {
   color: #00FF94;
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
 
 .terms-link:hover {
@@ -115,24 +153,48 @@
 .auth-button {
   width: 100%;
   padding: 0.875rem;
-  background: #00FF94;
+  background: linear-gradient(135deg, #00FF94, #00e085);
   color: #0A1628;
   border: none;
   border-radius: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   margin-top: 0.5rem;
+  box-shadow: 0 8px 20px rgba(0, 255, 148, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.auth-button:hover {
-  background: #00e085;
+.auth-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.auth-button:hover::before {
+  left: 100%;
+}
+
+.auth-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 255, 148, 0.4);
+}
+
+.auth-button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .auth-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .auth-divider {
@@ -148,12 +210,12 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: #1e293b;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .auth-divider span {
   position: relative;
-  background: #0F1F3A;
+  background: rgba(15, 31, 58, 0.8);
   padding: 0 1rem;
   font-size: 0.875rem;
   color: #64748B;
@@ -166,11 +228,12 @@
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
 
 .auth-link:hover {
   opacity: 0.8;
+  transform: translateY(-1px);
 }
 
 /* Responsive */
@@ -181,5 +244,9 @@
   
   .auth-title {
     font-size: 1.75rem;
+  }
+  
+  .auth-container {
+    padding: 1rem;
   }
 }

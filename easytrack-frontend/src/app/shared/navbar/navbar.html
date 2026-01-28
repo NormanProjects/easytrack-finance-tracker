@@ -1,9 +1,8 @@
-<!-- src/app/shared/navbar/navbar.component.html -->
+
 <nav class="navbar">
   <div class="nav-content">
     <div class="nav-logo">
       <img src="assets/images/logo.png" alt="EasyTrack Logo" class="logo-img">
-      <span class="logo-text">EasyTrack</span>
     </div>
     
     <div class="nav-links">
@@ -12,9 +11,10 @@
       <a href="#faq">FAQ</a>
     </div>
     
-    <div class="nav-actions">
+    <div class="nav-actions" *ngIf="showAuthButtons">
       <a routerLink="/auth/login" class="nav-login">Log in</a>
       <a routerLink="/auth/register" class="nav-signup">Get started</a>
     </div>
+    <div class="nav-actions-spacer" *ngIf="!showAuthButtons"></div>
   </div>
 </nav>
