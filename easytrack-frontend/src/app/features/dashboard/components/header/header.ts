@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { User } from '../../../../core/services/auth';
+import { User } from '../../../../core/models/user.model';
 
 @Component({
   selector: 'app-header',
@@ -9,8 +9,8 @@ import { User } from '../../../../core/services/auth';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header {
-
+export class HeaderComponent {
+  
   @Input() user: User | null = null;
   @Output() toggleSidebar = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
@@ -18,7 +18,7 @@ export class Header {
   searchQuery: string = '';
   userMenuOpen: boolean = false;
   notificationsOpen: boolean = false;
-  notificationCount: number = 3; // Mock notification count
+  notificationCount: number = 3;
 
   onToggleSidebar() {
     this.toggleSidebar.emit();
@@ -39,15 +39,23 @@ export class Header {
   }
 
   getUserInitials(): string {
-    if (!this.user?.name) return 'U';
-    const names = this.user.name.split(' ');
+    if (!this.user) return 'U';
+    
+    const names = this.user.name.split(' ').filter(n => n.length > 0);
     if (names.length >= 2) {
-      return (names[0][0] + names[1][0]).toUpperCase();
+      return (names[0][0] + names[names.length - 1][0]).toUpperCase();
     }
     return this.user.name[0].toUpperCase();
   }
 
-  // Close dropdowns when clicking outside
+  getUserName(): string {
+    return this.user?.name || 'User';
+  }
+
+  getUserEmail(): string {
+    return this.user?.email || 'user@example.com';
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -56,5 +64,4 @@ export class Header {
       this.notificationsOpen = false;
     }
   }
-
 }

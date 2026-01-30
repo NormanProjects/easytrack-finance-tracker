@@ -16,44 +16,43 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
   rememberMe: boolean = false;
-  loading: boolean = false;
   errorMessage: string = '';
-  returnUrl: string = '/dashboard';
+  isLoading: boolean = false;
+    loading: boolean = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-    // Get return url from route parameters or default to '/dashboard'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-  }
+    private router: Router
+  ) {}
 
   onSubmit() {
+    // Clear previous errors
+    this.errorMessage = '';
+
+    // Validate inputs
     if (!this.email || !this.password) {
-      this.errorMessage = 'Please fill in all fields';
+      this.errorMessage = 'Please enter both email and password';
       return;
     }
 
+    // Start loading
+    this.isLoading = true;
     this.loading = true;
-    this.errorMessage = '';
 
+    // Login
     this.authService.login({
       email: this.email,
       password: this.password,
       rememberMe: this.rememberMe
     }).subscribe({
-      next: (response) => {
-        console.log('Login successful:', response);
-        this.router.navigate([this.returnUrl]);
+      next: () => {
+        this.isLoading = false;
+        this.loading = false;
+        this.router.navigate(['/dashboard']);
       },
       error: (error) => {
-        console.error('Login failed:', error);
+        this.isLoading = false;
         this.errorMessage = error.message || 'Login failed. Please try again.';
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
       }
     });
   }

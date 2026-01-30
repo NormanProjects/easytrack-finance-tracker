@@ -1,1 +1,274 @@
-<p>overview works!</p>
+<!-- src/app/features/dashboard/components/overview/overview.component.html -->
+<div class="overview">
+  <!-- Loading State -->
+  <div class="loading" *ngIf="isLoading">
+    Loading dashboard...
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Financial Overview</h1>
+        <p class="page-subtitle">Track your income, expenses, and savings goals</p>
+      </div>
+      <button class="btn-primary" type="button">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>Add Transaction</span>
+      </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <!-- Total Balance -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Total Balance</span>
+          <div class="stat-icon balance">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-value">{{ totalBalance | currency:'ZAR':'symbol':'1.2-2' }}</div>
+        <div class="stat-footer">
+          <span class="stat-change positive">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+            </svg>
+            +12.5%
+          </span>
+          <span class="stat-period">from last month</span>
+        </div>
+      </div>
+
+      <!-- Monthly Income -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Monthly Income</span>
+          <div class="stat-icon income">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-value">{{ monthlyIncome | currency:'ZAR':'symbol':'1.2-2' }}</div>
+        <div class="stat-footer">
+          <span class="stat-change positive">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+            </svg>
+            +8.2%
+          </span>
+          <span class="stat-period">vs last month</span>
+        </div>
+      </div>
+
+      <!-- Monthly Expenses -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Monthly Expenses</span>
+          <div class="stat-icon expenses">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-value">{{ monthlyExpenses | currency:'ZAR':'symbol':'1.2-2' }}</div>
+        <div class="stat-footer">
+          <span class="stat-change negative">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd"/>
+            </svg>
+            +15.3%
+          </span>
+          <span class="stat-period">vs last month</span>
+        </div>
+      </div>
+
+      <!-- Savings Rate -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Savings Rate</span>
+          <div class="stat-icon savings">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-value">{{ savingsRate }}%</div>
+        <div class="stat-footer">
+          <span class="stat-change positive">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+            </svg>
+            +3.1%
+          </span>
+          <span class="stat-period">from last month</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Spending Chart -->
+      <div class="content-card large">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Spending Overview</h3>
+            <p class="card-subtitle">Your spending patterns for the last 6 months</p>
+          </div>
+          <select class="period-select">
+            <option value="6months">Last 6 months</option>
+            <option value="12months">Last 12 months</option>
+            <option value="year">This year</option>
+          </select>
+        </div>
+        <div class="chart-container">
+          <div class="chart-placeholder">
+            📊 Chart will be displayed here
+            <p class="chart-placeholder-text">Integrate with Chart.js or other charting library</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="content-card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Transactions</h3>
+          <a href="#" class="view-all-link">View all</a>
+        </div>
+        <div class="transactions-list">
+          <div 
+            class="transaction-item" 
+            *ngFor="let transaction of recentTransactions; trackBy: trackByTransactionId"
+          >
+            <div class="transaction-icon" [ngClass]="transaction.type">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path *ngIf="transaction.type === 'income'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                <path *ngIf="transaction.type === 'expense'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" transform="rotate(180 10 10)"/>
+              </svg>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-name">{{ transaction.name }}</div>
+              <div class="transaction-category">{{ transaction.category }}</div>
+            </div>
+            <div class="transaction-amount" [ngClass]="transaction.type">
+              {{ getTransactionSign(transaction.type) }}{{ transaction.amount | currency:'ZAR':'symbol':'1.2-2' }}
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="recentTransactions.length === 0">
+            <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+            </svg>
+            <h3>No transactions yet</h3>
+            <p>Start tracking your finances by adding your first transaction</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget Progress -->
+      <div class="content-card">
+        <div class="card-header">
+          <h3 class="card-title">Budget Categories</h3>
+          <a href="#" class="view-all-link">Manage</a>
+        </div>
+        <div class="budget-list">
+          <div 
+            class="budget-item" 
+            *ngFor="let budget of budgets; trackBy: trackByBudgetCategory"
+          >
+            <div class="budget-header">
+              <div class="budget-info">
+                <span class="budget-name">{{ budget.category }}</span>
+                <span class="budget-amount">
+                  {{ budget.spent | currency:'ZAR':'symbol':'1.2-2' }} / {{ budget.limit | currency:'ZAR':'symbol':'1.2-2' }}
+                </span>
+              </div>
+              <span class="budget-percentage">{{ budget.percentage }}%</span>
+            </div>
+            <div class="budget-bar">
+              <div 
+                class="budget-progress" 
+                [style.width.%]="budget.percentage"
+                [ngClass]="{
+                  'warning': budget.percentage >= 80 && budget.percentage < 100,
+                  'danger': budget.percentage >= 100
+                }"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="budgets.length === 0">
+            <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            <h3>No budgets set</h3>
+            <p>Create your first budget to start tracking spending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3 class="section-title">Quick Actions</h3>
+      <div class="actions-grid">
+        <button class="action-card" type="button">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <div class="action-title">Upload Statement</div>
+            <div class="action-description">Import CSV file</div>
+          </div>
+        </button>
+
+        <button class="action-card" type="button">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <div class="action-title">Set Budget</div>
+            <div class="action-description">Create new budget</div>
+          </div>
+        </button>
+
+        <button class="action-card" type="button">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <div class="action-title">View Reports</div>
+            <div class="action-description">Financial insights</div>
+          </div>
+        </button>
+
+        <button class="action-card" type="button">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <div class="action-title">Goals</div>
+            <div class="action-description">Track savings goals</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

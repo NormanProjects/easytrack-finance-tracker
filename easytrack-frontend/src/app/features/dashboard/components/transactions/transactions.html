@@ -1,1 +1,273 @@
-<p>transactions works!</p>
+<!-- src/app/features/dashboard/components/transactions/transactions.component.html -->
+<div class="transactions-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Transactions</h1>
+      <p class="page-subtitle">Manage and track all your financial transactions</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" type="button" (click)="exportTransactions()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+        <span>Export CSV</span>
+      </button>
+      <button class="btn-primary" type="button" (click)="openAddTransaction()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>Add Transaction</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+      </svg>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search transactions..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+      >
+      <button class="clear-btn" *ngIf="searchQuery" (click)="clearSearch()" type="button">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <select class="filter-select" [(ngModel)]="filterType" (change)="onFilterChange()">
+        <option value="all">All Types</option>
+        <option value="income">Income Only</option>
+        <option value="expense">Expenses Only</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filterCategory" (change)="onFilterChange()">
+        <option value="all">All Categories</option>
+        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filterPeriod" (change)="onFilterChange()">
+        <option value="all">All Time</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+        <option value="quarter">This Quarter</option>
+        <option value="year">This Year</option>
+        <option value="custom">Custom Range</option>
+      </select>
+
+      <button class="filter-reset-btn" (click)="resetFilters()" type="button" *ngIf="hasActiveFilters()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        <span>Reset</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-summary" *ngIf="!isLoading && filteredTransactions.length > 0">
+    <div class="summary-item">
+      <span class="summary-label">Total Transactions</span>
+      <span class="summary-value">{{ filteredTransactions.length }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item income">
+      <span class="summary-label">Total Income</span>
+      <span class="summary-value">{{ calculateTotalIncome() | currency:'ZAR':'symbol':'1.2-2' }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item expense">
+      <span class="summary-label">Total Expenses</span>
+      <span class="summary-value">{{ calculateTotalExpenses() | currency:'ZAR':'symbol':'1.2-2' }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item" [ngClass]="getNetAmountClass()">
+      <span class="summary-label">Net Amount</span>
+      <span class="summary-value">{{ calculateNetAmount() | currency:'ZAR':'symbol':'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="table-container">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Loading transactions...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filteredTransactions.length === 0">
+      <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+      </svg>
+      <h3>No transactions found</h3>
+      <p *ngIf="searchQuery || hasActiveFilters()">Try adjusting your search or filters</p>
+      <p *ngIf="!searchQuery && !hasActiveFilters()">Start tracking your finances by adding your first transaction</p>
+      <button class="btn-primary" (click)="openAddTransaction()" type="button">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>Add Your First Transaction</span>
+      </button>
+    </div>
+
+    <!-- Transactions Table -->
+    <table class="transactions-table" *ngIf="!isLoading && filteredTransactions.length > 0">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('date')">
+            <div class="th-content">
+              <span>Date</span>
+              <svg class="sort-icon" [class.active]="sortColumn === 'date'" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('description')">
+            <div class="th-content">
+              <span>Description</span>
+              <svg class="sort-icon" [class.active]="sortColumn === 'description'" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </th>
+          <th>Category</th>
+          <th>Account</th>
+          <th class="sortable" (click)="sortBy('amount')">
+            <div class="th-content">
+              <span>Amount</span>
+              <svg class="sort-icon" [class.active]="sortColumn === 'amount'" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          class="transaction-row" 
+          *ngFor="let transaction of paginatedTransactions; trackBy: trackByTransactionId"
+          [class.selected]="selectedTransactions.has(transaction.id)"
+        >
+          <td>
+            <div class="date-cell">
+              <span class="date-primary">{{ transaction.date | date:'MMM d, yyyy' }}</span>
+              <span class="date-secondary">{{ transaction.date | date:'EEE' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="description-cell">
+              <div class="transaction-icon" [ngClass]="transaction.type">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                  <path *ngIf="transaction.type === 'income'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                  <path *ngIf="transaction.type === 'expense'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" transform="rotate(180 10 10)"/>
+                </svg>
+              </div>
+              <div class="description-content">
+                <span class="description-text">{{ transaction.description }}</span>
+                <span class="description-note" *ngIf="transaction.notes">{{ transaction.notes }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="category-badge">{{ transaction.category }}</span>
+          </td>
+          <td>
+            <span class="account-name">{{ transaction.account }}</span>
+          </td>
+          <td>
+            <span class="amount-cell" [ngClass]="transaction.type">
+              {{ transaction.type === 'income' ? '+' : '-' }}{{ transaction.amount | currency:'ZAR':'symbol':'1.2-2' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="action-btn edit" (click)="editTransaction(transaction)" type="button" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+              </svg>
+            </button>
+            <button class="action-btn delete" (click)="deleteTransaction(transaction)" type="button" title="Delete">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="!isLoading && filteredTransactions.length > 0">
+    <div class="pagination-info">
+      Showing {{ getPageStart() }} to {{ getPageEnd() }} of {{ filteredTransactions.length }} transactions
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === 1"
+        (click)="goToPage(1)"
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+      
+      <span class="page-numbers">
+        Page {{ currentPage }} of {{ getTotalPages() }}
+      </span>
+
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === getTotalPages()"
+        (click)="nextPage()"
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === getTotalPages()"
+        (click)="goToPage(getTotalPages())"
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+    <div class="page-size-selector">
+      <label for="pageSize">Show:</label>
+      <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+        <option [value]="10">10</option>
+        <option [value]="25">25</option>
+        <option [value]="50">50</option>
+        <option [value]="100">100</option>
+      </select>
+    </div>
+  </div>
+</div>

@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
 import { LandingComponent } from './pages/landing/landing.component';
 import { LoginComponent } from './features/auth/login/login';
-import { Register } from './features/auth/register/register';
-import { Dashboard } from './features/dashboard/dashboard/dashboard';
+import { RegisterComponent } from './features/auth/register/register';
+import { DashboardComponent } from './features/dashboard/dashboard/dashboard';
+import { Overview } from './features/dashboard/components/overview/overview';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -18,13 +19,16 @@ export const routes: Routes = [
   },
   {
     path: 'auth/register',
-    component: Register
+    component: RegisterComponent
   },
-  
+  {
+    path: 'overview',
+    component: Overview
+  },
   // Protected routes
   {
     path: 'dashboard',
-    component: Dashboard
+    component: DashboardComponent
     // canActivate: [authGuard] // Enable when ready
   },
   

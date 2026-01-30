@@ -1,37 +1,69 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AuthService, User } from '../../../core/services/auth';   
-//
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { AuthService } from '../../../core/services/auth';  
 import { SidebarComponent } from '../../../shared/sidebar/sidebar';
-import { Header } from '../components/header/header';
+import { HeaderComponent } from '../components/header/header';
+import { Overview } from '../components/overview/overview';
+import { Router } from '@angular/router';
+import { User } from '../../../core/models/user.model';
 
+/*
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+}*/
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, CommonModule,
+  imports: [CommonModule,
     SidebarComponent,
-    Header,
+    HeaderComponent,
+    Overview,
     ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard {
-currentUser: User | null = null;
+
+export class DashboardComponent implements OnInit, OnDestroy {
+  currentUser: User | null = null;
   sidebarOpen: boolean = true;
   activeView: 'overview' | 'transactions' | 'budget' = 'overview';
+  private isBrowser: boolean;
 
   constructor(
-    private authService: AuthService  ) {}
+    private authService: AuthService,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit() {
-    // Get current user
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
 
-    // Check screen size and close sidebar on mobile
+    if (this.isBrowser) {
+      this.checkScreenSize();
+      this.setupResizeListener();
+    }
+  }
+
+  private checkScreenSize(): void {
+    if (!this.isBrowser) return;
+    
     if (window.innerWidth < 1024) {
       this.sidebarOpen = false;
     }
+  }
+
+  private setupResizeListener(): void {
+    if (!this.isBrowser) return;
+    window.addEventListener('resize', () => {
+      this.checkScreenSize();
+    });
   }
 
   toggleSidebar() {
@@ -45,9 +77,14 @@ currentUser: User | null = null;
   changeView(view: 'overview' | 'transactions' | 'budget') {
     this.activeView = view;
     
-    // Close sidebar on mobile after navigation
-    if (window.innerWidth < 1024) {
+    if (this.isBrowser && window.innerWidth < 1024) {
       this.sidebarOpen = false;
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.isBrowser) {
+      window.removeEventListener('resize', this.checkScreenSize);
     }
   }
 }
