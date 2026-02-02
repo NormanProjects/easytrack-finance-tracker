@@ -11,6 +11,7 @@ import { Transaction, TransactionFilter, TransactionService } from '../../../../
 })
 export class TransactionsComponent implements OnInit {
   transactions: Transaction[] = [];
+  filteredTransactions: Transaction[] = [];
   isLoading: boolean = true;
   isUploading: boolean = false;
   errorMessage: string = '';

@@ -1,149 +1,253 @@
-<!-- src/app/features/dashboard/components/transactions/transactions.component.html -->
 <div class="transactions-container">
   <!-- Page Header -->
   <div class="page-header">
     <div class="header-content">
       <h1 class="page-title">Transactions</h1>
-      <p class="page-subtitle">Manage your income and expenses</p>
+      <p class="page-subtitle">Track and manage all your financial transactions</p>
     </div>
     <div class="header-actions">
-      <input
-        type="file"
-        id="csvFileInput"
-        accept=".csv"
-        (change)="onFileSelected($event)"
-        style="display: none;"
-      />
-      <button class="btn-secondary" (click)="triggerFileUpload()" [disabled]="isUploading" type="button">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-        </svg>
-        <span *ngIf="!isUploading">Import CSV</span>
-        <span *ngIf="isUploading">Uploading...</span>
-      </button>
-      <button class="btn-secondary" (click)="exportToCSV()" type="button">
+      <button class="btn-secondary" type="button" (click)="exportToCSV()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
         </svg>
-        <span>Export CSV</span>
+        <span>Export</span>
       </button>
-      <button class="btn-primary" type="button">
+      <button class="btn-primary" type="button" (click)="triggerFileUpload()" [disabled]="isUploading">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
         </svg>
-        <span>Add Transaction</span>
+        <span *ngIf="!isUploading">Upload CSV</span>
+        <span *ngIf="isUploading">Uploading...</span>
       </button>
+      <input 
+        type="file" 
+        id="csvFileInput" 
+        accept=".csv" 
+        (change)="onFileSelected($event)"
+        style="display: none;"
+      >
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <div class="summary-card income">
+      <div class="card-icon">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="card-content">
+        <div class="card-label">Total Income</div>
+        <div class="card-value">{{ getTotalIncome() | currency:'ZAR':'symbol':'1.2-2' }}</div>
+      </div>
+    </div>
+
+    <div class="summary-card expense">
+      <div class="card-icon">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" transform="rotate(180 10 10)"/>
+        </svg>
+      </div>
+      <div class="card-content">
+        <div class="card-label">Total Expenses</div>
+        <div class="card-value">{{ getTotalExpenses() | currency:'ZAR':'symbol':'1.2-2' }}</div>
+      </div>
+    </div>
+
+    <div class="summary-card net" [class.positive]="getNetAmount() >= 0" [class.negative]="getNetAmount() < 0">
+      <div class="card-icon">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="card-content">
+        <div class="card-label">Net Amount</div>
+        <div class="card-value">{{ getNetAmount() | currency:'ZAR':'symbol':'1.2-2' }}</div>
+      </div>
+    </div>
+
+    <div class="summary-card count">
+      <div class="card-icon">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+        </svg>
+      </div>
+      <div class="card-content">
+        <div class="card-label">Total Transactions</div>
+        <div class="card-value">{{ filteredTransactions.length }}</div>
+      </div>
     </div>
   </div>
 
   <!-- Filters -->
   <div class="filters-section">
-    <div class="search-box">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="search-icon">
-        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-      </svg>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search transactions..."
-        [(ngModel)]="filter.searchTerm"
-        (input)="applyFilters()"
-      />
-    </div>
-
-    <select class="filter-select" [(ngModel)]="filter.type" (change)="applyFilters()">
-      <option value="all">All Types</option>
-      <option value="income">Income</option>
-      <option value="expense">Expenses</option>
-    </select>
-
-    <select class="filter-select" [(ngModel)]="filter.category" (change)="applyFilters()">
-      <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
-    </select>
-
-    <select class="filter-select" [(ngModel)]="filter.dateRange" (change)="applyFilters()">
-      <option value="all">All Time</option>
-      <option value="today">Today</option>
-      <option value="week">This Week</option>
-      <option value="month">This Month</option>
-      <option value="year">This Year</option>
-    </select>
-
-    <button class="btn-reset" (click)="clearFilters()" type="button">Reset</button>
-  </div>
-
-  <!-- Stats -->
-  <div class="stats-summary">
-    <div class="stat-item">
-      <div class="stat-label">Total Income</div>
-      <div class="stat-value income">{{ getTotalIncome() | currency:'ZAR':'symbol':'1.2-2' }}</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Total Expenses</div>
-      <div class="stat-value expense">{{ getTotalExpenses() | currency:'ZAR':'symbol':'1.2-2' }}</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Net Amount</div>
-      <div class="stat-value" [class.positive]="getNetAmount() >= 0" [class.negative]="getNetAmount() < 0">
-        {{ getNetAmount() | currency:'ZAR':'symbol':'1.2-2' }}
+    <div class="filters-row">
+      <!-- Search -->
+      <div class="filter-group search-filter">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Search transactions..." 
+          [(ngModel)]="filter.searchTerm"
+          (input)="applyFilters()"
+          class="filter-input search-input"
+        >
       </div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Total</div>
-      <div class="stat-value">{{ totalCount }}</div>
+
+      <!-- Type Filter -->
+      <select [(ngModel)]="filter.type" (change)="applyFilters()" class="filter-select">
+        <option value="all">All Types</option>
+        <option value="income">Income</option>
+        <option value="expense">Expenses</option>
+      </select>
+
+      <!-- Category Filter -->
+      <select [(ngModel)]="filter.category" (change)="applyFilters()" class="filter-select">
+        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+      </select>
+
+      <!-- Date Range -->
+      <select [(ngModel)]="filter.dateRange" (change)="applyFilters()" class="filter-select">
+        <option value="all">All Time</option>
+        <option value="today">Today</option>
+        <option value="week">Last 7 Days</option>
+        <option value="month">Last 30 Days</option>
+        <option value="year">Last Year</option>
+      </select>
+
+      <!-- Sort -->
+      <select [(ngModel)]="filter.sortBy" (change)="applyFilters()" class="filter-select">
+        <option value="date">Sort by Date</option>
+        <option value="amount">Sort by Amount</option>
+        <option value="category">Sort by Category</option>
+      </select>
+
+      <!-- Sort Order -->
+      <button 
+        class="sort-order-btn" 
+        (click)="filter.sortOrder = filter.sortOrder === 'asc' ? 'desc' : 'asc'; applyFilters()"
+        type="button"
+        [title]="filter.sortOrder === 'asc' ? 'Ascending' : 'Descending'"
+      >
+        <svg *ngIf="filter.sortOrder === 'desc'" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
+        </svg>
+        <svg *ngIf="filter.sortOrder === 'asc'" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h5a1 1 0 000-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM13 16a1 1 0 102 0v-5.586l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 101.414 1.414L13 10.414V16z"/>
+        </svg>
+      </button>
+
+      <!-- Clear Filters -->
+      <button class="btn-clear" (click)="clearFilters()" type="button">
+        Clear Filters
+      </button>
     </div>
   </div>
 
-  <!-- Error -->
-  <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
-
-  <!-- Loading -->
+  <!-- Loading State -->
   <div class="loading-state" *ngIf="isLoading">
     <div class="spinner"></div>
-    <p>Loading...</p>
+    <p>Loading transactions...</p>
   </div>
 
-  <!-- Table -->
-  <div class="table-container" *ngIf="!isLoading">
-    <table class="transactions-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Description</th>
-          <th>Category</th>
-          <th>Amount</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let t of transactions; trackBy: trackByTransactionId">
-          <td>{{ t.date | date:'MMM d, y' }}</td>
-          <td>{{ t.description }}</td>
-          <td>{{ t.category }}</td>
-          <td [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
-            {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency:'ZAR':'symbol':'1.2-2' }}
-          </td>
-          <td>
-            <button (click)="editTransaction(t)" type="button">Edit</button>
-            <button (click)="deleteTransaction(t)" type="button">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Transactions Table -->
+  <div class="transactions-table" *ngIf="!isLoading">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th class="text-right">Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let transaction of getPaginatedTransactions(); trackBy: trackByTransactionId"
+            class="transaction-row"
+          >
+            <td class="date-cell">{{ transaction.date | date:'MMM d, y' }}</td>
+            <td class="description-cell">
+              <div class="description-content">
+                <span class="description-text">{{ transaction.description }}</span>
+                <span class="account-text" *ngIf="transaction.account">{{ transaction.account }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="category-badge">{{ transaction.category }}</span>
+            </td>
+            <td>
+              <span class="type-badge" [class]="transaction.type">
+                {{ transaction.type | titlecase }}
+              </span>
+            </td>
+            <td class="amount-cell text-right" [class]="transaction.type">
+              {{ transaction.type === 'income' ? '+' : '-' }}{{ transaction.amount | currency:'ZAR':'symbol':'1.2-2' }}
+            </td>
+            <td>
+              <span class="status-badge" [class]="transaction.status">
+                {{ transaction.status | titlecase }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-    <div class="empty-state" *ngIf="transactions.length === 0">
-      <h3>No transactions found</h3>
-      <p>Try adjusting your filters</p>
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="filteredTransactions.length === 0">
+        <svg width="80" height="80" viewBox="0 0 20 20" fill="currentColor" opacity="0.3">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+        </svg>
+        <h3>No transactions found</h3>
+        <p>Try adjusting your filters or upload a CSV file to get started</p>
+        <button class="btn-primary" (click)="clearFilters()" type="button">Clear Filters</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Pagination -->
-  <div class="pagination" *ngIf="!isLoading && transactions.length > 0">
-    <button (click)="previousPage()" [disabled]="currentPage === 1" type="button">Prev</button>
-    <span>Page {{ currentPage }} of {{ totalPages }}</span>
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages" type="button">Next</button>
-    <select [(ngModel)]="filter.size" (change)="changePageSize(filter.size!)">
-      <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} per page</option>
-    </select>
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="pagination-btn" 
+        (click)="previousPage()" 
+        [disabled]="currentPage === 1"
+        type="button"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        Previous
+      </button>
+
+      <div class="pagination-pages">
+        <button 
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          class="pagination-page"
+          [class.active]="currentPage === i + 1"
+          (click)="goToPage(i + 1)"
+          type="button"
+        >
+          {{ i + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn" 
+        (click)="nextPage()" 
+        [disabled]="currentPage === totalPages"
+        type="button"
+      >
+        Next
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </div>
