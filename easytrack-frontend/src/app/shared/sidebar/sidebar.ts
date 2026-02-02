@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-//import { AuthService } from '../../services/auth';
+
+export type DashboardView = 'overview' | 'transactions' | 'budget' | 'analytics' | 'settings';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,22 +11,17 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrls: ['./sidebar.css']
 })
 export class SidebarComponent {
-
   @Input() isOpen: boolean = true;
+  @Input() activeView: string = 'overview';
   @Output() closeSidebar = new EventEmitter<void>();
+  @Output() viewChange = new EventEmitter<DashboardView>();
 
-  activeItem: string = 'overview';
-
-  navigate(item: string, event: Event) {
+  navigate(view: DashboardView, event: Event) {
     event.preventDefault();
-    this.activeItem = item;
-    // Emit event to parent to change view
-    // You can add @Output() navigateView = new EventEmitter<string>();
-    // and emit this.navigateView.emit(item);
+    this.viewChange.emit(view);
   }
 
   close() {
     this.closeSidebar.emit();
   }
- 
 }

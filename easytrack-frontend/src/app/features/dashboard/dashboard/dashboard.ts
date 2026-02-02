@@ -1,26 +1,20 @@
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../../core/services/auth';  
-import { SidebarComponent } from '../../../shared/sidebar/sidebar';
+import { DashboardView, SidebarComponent } from '../../../shared/sidebar/sidebar';
 import { HeaderComponent } from '../components/header/header';
-import { Overview } from '../components/overview/overview';
 import { Router } from '@angular/router';
 import { User } from '../../../core/models/user.model';
+import { BudgetComponent } from '../components/budget/budget';
+import { Overview } from '../components/overview/overview';
 
-/*
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  firstName?: string;
-  lastName?: string;
-}*/
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule,
     SidebarComponent,
     HeaderComponent,
     Overview,
+    BudgetComponent,
     ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -29,7 +23,7 @@ interface User {
 export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   sidebarOpen: boolean = true;
-  activeView: 'overview' | 'transactions' | 'budget' = 'overview';
+  activeView: DashboardView = 'overview';
   private isBrowser: boolean;
 
   constructor(
@@ -74,7 +68,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.authService.logout();
   }
 
-  changeView(view: 'overview' | 'transactions' | 'budget') {
+  changeView(view: DashboardView) {
     this.activeView = view;
     
     if (this.isBrowser && window.innerWidth < 1024) {

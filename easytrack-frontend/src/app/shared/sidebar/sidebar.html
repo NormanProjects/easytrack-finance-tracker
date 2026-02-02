@@ -1,4 +1,4 @@
-
+<!-- src/app/features/dashboard/components/sidebar/sidebar.component.html -->
 <aside class="sidebar" [class.open]="isOpen">
   <!-- Logo -->
   <div class="sidebar-header">
@@ -13,7 +13,7 @@
     <a 
       href="#" 
       class="nav-item"
-      [class.active]="activeItem === 'overview'"
+      [class.active]="activeView === 'overview'"
       (click)="navigate('overview', $event)"
     >
       <svg class="nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -25,7 +25,7 @@
     <a 
       href="#" 
       class="nav-item"
-      [class.active]="activeItem === 'transactions'"
+      [class.active]="activeView === 'transactions'"
       (click)="navigate('transactions', $event)"
     >
       <svg class="nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -37,7 +37,7 @@
     <a 
       href="#" 
       class="nav-item"
-      [class.active]="activeItem === 'budget'"
+      [class.active]="activeView === 'budget'"
       (click)="navigate('budget', $event)"
     >
       <svg class="nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -49,7 +49,7 @@
     <a 
       href="#" 
       class="nav-item"
-      [class.active]="activeItem === 'analytics'"
+      [class.active]="activeView === 'analytics'"
       (click)="navigate('analytics', $event)"
     >
       <svg class="nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -61,7 +61,7 @@
     <a 
       href="#" 
       class="nav-item"
-      [class.active]="activeItem === 'settings'"
+      [class.active]="activeView === 'settings'"
       (click)="navigate('settings', $event)"
     >
       <svg class="nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -77,7 +77,7 @@
       <div class="upgrade-icon">✨</div>
       <h4 class="upgrade-title">Upgrade to Pro</h4>
       <p class="upgrade-text">Get advanced analytics and unlimited budgets</p>
-      <button class="upgrade-button">Upgrade Now</button>
+      <button class="upgrade-button" type="button">Upgrade Now</button>
     </div>
   </div>
 
