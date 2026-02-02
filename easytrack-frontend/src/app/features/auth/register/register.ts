@@ -12,7 +12,6 @@ import { AuthService } from '../../../core/services/auth';
   styleUrl: './register.css',
 })
 export class RegisterComponent {
-  // Properties that match your template
   name: string = '';
   email: string = '';
   password: string = '';
@@ -27,64 +26,40 @@ export class RegisterComponent {
   ) {}
 
   onSubmit() {
-    // Clear previous errors
     this.errorMessage = '';
 
-    // Validate inputs - using properties from template
     if (!this.name || !this.email || !this.password || !this.confirmPassword) {
       this.errorMessage = 'Please fill in all fields';
       return;
     }
 
-    // Split name into first and last name
     const nameParts = this.name.trim().split(' ');
-    let firstName = '';
-    let lastName = '';
-    
-    if (nameParts.length >= 2) {
-      firstName = nameParts[0];
-      lastName = nameParts.slice(1).join(' ');
-    } else {
-      firstName = this.name.trim();
-      lastName = ''; // Last name can be empty
-    }
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.email)) {
       this.errorMessage = 'Please enter a valid email address';
       return;
     }
 
-    // Validate password length - Update to match API requirements (8 chars)
     if (this.password.length < 8) {
       this.errorMessage = 'Password must be at least 8 characters long';
       return;
     }
 
-    // Validate password complexity - Add this
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
-    if (!passwordRegex.test(this.password)) {
-      this.errorMessage = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
-      return;
-    }
-
-    // Validate password match
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Passwords do not match';
       return;
     }
 
-    // Validate terms agreement
     if (!this.agreeToTerms) {
       this.errorMessage = 'You must agree to the terms of service';
       return;
     }
 
-    // Start loading
     this.loading = true;
 
-    // Register - split name into firstName and lastName for backend
     this.authService.register({
       firstName: firstName,
       lastName: lastName,
@@ -93,10 +68,12 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.loading = false;
+        console.log('Registration successful, navigating to dashboard');
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         this.loading = false;
+        console.error('Registration error:', error);
         this.errorMessage = error.message || 'Registration failed. Please try again.';
       }
     });

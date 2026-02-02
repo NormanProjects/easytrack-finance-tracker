@@ -1,30 +1,25 @@
-
-import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { environment } from '../../../environments/environment';
-import { 
-  User, 
-  AuthResponse, 
-  LoginRequest, 
-  RegisterRequest,
-  UpdateProfileRequest,
-  ChangePasswordRequest
-} from '../models/user.model';
-
-
+import { BehaviorSubject, Observable, throwError, of, delay } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { User, AuthResponse, LoginRequest, RegisterRequest } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/api/auth`;
+  private readonly API_URL = 'http://localhost:8080/api';
+  private readonly TOKEN_KEY = 'easytrack_token';
+  private readonly USER_KEY = 'easytrack_user';
+  private isBrowser: boolean;
+
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser$: Observable<User | null>;
-  private isBrowser: boolean;
+
+  private isAuthenticatedSubject: BehaviorSubject<boolean>;
+  public isAuthenticated$: Observable<boolean>;
 
   constructor(
     private http: HttpClient,
@@ -32,246 +27,203 @@ export class AuthService {
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      this.isBrowser ? this.getStoredUser() : null
-    );
+
+    const storedUser = this.getStoredUser();
+    this.currentUserSubject = new BehaviorSubject<User | null>(storedUser);
     this.currentUser$ = this.currentUserSubject.asObservable();
+
+    this.isAuthenticatedSubject = new BehaviorSubject<boolean>(!!storedUser);
+    this.isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   }
 
-  /**
-   * Get current user value
-   */
-  public get currentUserValue(): User | null {
+  get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
 
-  /**
-   * Get current user
-   */
-  public getCurrentUser(): User | null {
-    return this.currentUserValue;
+  get isAuthenticated(): boolean {
+    return this.isAuthenticatedSubject.value;
   }
 
   /**
-   * Check if user is authenticated
+   * Register a new user
    */
-  public isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    // Mock registration - replace with real API call
+    const mockResponse: AuthResponse = {
+      token: 'mock-jwt-token-' + Date.now(),
+      user: {
+        id: '1',
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName
+      }
+    };
 
-  /**
-   * Check if token is valid (for auth guard)
-   */
-  public hasValidToken(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-    
-    // TODO: Add token expiration check if needed
-    return true;
+    return of(mockResponse).pipe(
+      delay(1000),
+      tap(response => {
+        console.log('Mock registration successful:', response);
+        this.handleAuthSuccess(response);
+      }),
+      catchError((error: HttpErrorResponse) => this.handleError(error))
+    );
+
+    // Use this for real backend:
+    // return this.http.post<AuthResponse>(`${this.API_URL}/auth/register`, data)
+    //   .pipe(
+    //     tap(response => this.handleAuthSuccess(response)),
+    //     catchError((error: HttpErrorResponse) => this.handleError(error))
+    //   );
   }
 
   /**
    * Login user
    */
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    // Remove rememberMe from the request if it exists (backend doesn't need it)
-    const { rememberMe, ...loginData } = credentials;
-    
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, loginData)
-      .pipe(
-        tap(response => this.handleAuthResponse(response)),
-        catchError(this.handleError)
-      );
-  }
+    // Mock login - replace with real API call
+    const mockResponse: AuthResponse = {
+      token: 'mock-jwt-token-' + Date.now(),
+      user: {
+        id: '1',
+        name: 'Demo User',
+        email: credentials.email,
+        firstName: 'Demo',
+        lastName: 'User'
+      }
+    };
 
-  /**
-   * Register new user
-   */
-  register(userData: RegisterRequest): Observable<AuthResponse> {
-    // Remove name from the request if it exists (backend uses firstName/lastName)
-    const { name, ...registerData } = userData;
-    
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, registerData)
-      .pipe(
-        tap(response => this.handleAuthResponse(response)),
-        catchError(this.handleError)
-      );
+    return of(mockResponse).pipe(
+      delay(1000),
+      tap(response => {
+        console.log('Mock login successful:', response);
+        this.handleAuthSuccess(response, credentials.rememberMe);
+      }),
+      catchError((error: HttpErrorResponse) => this.handleError(error))
+    );
+
+    // Use this for real backend:
+    // return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials)
+    //   .pipe(
+    //     tap(response => this.handleAuthSuccess(response, credentials.rememberMe)),
+    //     catchError((error: HttpErrorResponse) => this.handleError(error))
+    //   );
   }
 
   /**
    * Logout user
    */
   logout(): void {
-    this.removeToken();
-    this.removeUser();
+    if (this.isBrowser) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      sessionStorage.removeItem(this.TOKEN_KEY);
+      sessionStorage.removeItem(this.USER_KEY);
+    }
+
     this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+    this.isAuthenticatedSubject.next(false);
+
+    this.router.navigate(['/auth/login']);
   }
 
   /**
-   * Get stored JWT token
+   * Get stored auth token
    */
-  public getToken(): string | null {
+  getToken(): string | null {
     if (!this.isBrowser) return null;
-    return localStorage.getItem('auth_token');
+    return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
   }
 
   /**
-   * Handle successful authentication response
+   * Check if token exists and is valid
    */
-  private handleAuthResponse(response: AuthResponse): void {
-    if (!this.isBrowser) return;
-
-    // Store token
-    localStorage.setItem('auth_token', response.token);
-    
-    // Create user object
-    const user: User = {
-      id: response.userId,
-      email: response.email,
-      name: `${response.firstName} ${response.lastName}`,
-      firstName: response.firstName,
-      lastName: response.lastName
-    };
-    
-    // Store user
-    localStorage.setItem('current_user', JSON.stringify(user));
-    this.currentUserSubject.next(user);
-  }
-
-  /**
-   * Get stored user from localStorage
-   */
-  private getStoredUser(): User | null {
-    if (!this.isBrowser) return null;
+  hasValidToken(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
 
     try {
-      const userJson = localStorage.getItem('current_user');
-      return userJson ? JSON.parse(userJson) : null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiry = payload.exp * 1000;
+      return Date.now() < expiry;
     } catch (error) {
-      console.error('Error parsing stored user:', error);
-      return null;
+      // For mock tokens, just return true if token exists
+      return true;
     }
-  }
-
-  /**
-   * Remove token from storage
-   */
-  private removeToken(): void {
-    if (!this.isBrowser) return;
-    localStorage.removeItem('auth_token');
-  }
-
-  /**
-   * Remove user from storage
-   */
-  private removeUser(): void {
-    if (!this.isBrowser) return;
-    localStorage.removeItem('current_user');
-  }
-
-  /**
-   * Handle HTTP errors
-   */
-  private handleError(error: any): Observable<never> {
-    console.error('Auth Error:', error);
-    
-    let errorMessage = 'An error occurred during authentication';
-    
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = error.error.message;
-    } else if (error.error && error.error.message) {
-      errorMessage = error.error.message;
-    } else if (error.status === 401) {
-      errorMessage = 'Invalid email or password';
-    } else if (error.status === 403) {
-      errorMessage = 'Access forbidden';
-    } else if (error.status === 0) {
-      errorMessage = 'Cannot connect to server. Please check your connection.';
-    }
-    
-    return throwError(() => new Error(errorMessage));
   }
 
   /**
    * Refresh token
    */
   refreshToken(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, {})
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/refresh`, {})
       .pipe(
-        tap(response => {
-          if (this.isBrowser) {
-            localStorage.setItem('auth_token', response.token);
-          }
-        }),
-        catchError(this.handleError)
+        tap(response => this.handleAuthSuccess(response)),
+        catchError((error: HttpErrorResponse) => this.handleError(error))
       );
   }
 
   /**
-   * Verify token validity
+   * Get current user from backend
    */
-  verifyToken(): Observable<boolean> {
-    const token = this.getToken();
-    if (!token) {
-      return throwError(() => new Error('No token found'));
-    }
-
-    return this.http.get<boolean>(`${this.apiUrl}/verify`)
+  getCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.API_URL}/auth/me`)
       .pipe(
-        catchError(() => {
+        tap(user => {
+          this.currentUserSubject.next(user);
+          this.isAuthenticatedSubject.next(true);
+        }),
+        catchError(error => {
           this.logout();
-          return throwError(() => new Error('Token verification failed'));
+          return throwError(() => error);
         })
       );
   }
 
   /**
-   * Update user profile
+   * Handle successful authentication
    */
-  updateProfile(userData: UpdateProfileRequest): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/profile`, userData)
-      .pipe(
-        tap(user => {
-          if (this.isBrowser) {
-            localStorage.setItem('current_user', JSON.stringify(user));
-          }
-          this.currentUserSubject.next(user);
-        }),
-        catchError(this.handleError)
-      );
+  private handleAuthSuccess(response: AuthResponse, rememberMe: boolean = true): void {
+    if (!this.isBrowser) return;
+
+    const storage = rememberMe ? localStorage : sessionStorage;
+    
+    storage.setItem(this.TOKEN_KEY, response.token);
+    storage.setItem(this.USER_KEY, JSON.stringify(response.user));
+
+    this.currentUserSubject.next(response.user);
+    this.isAuthenticatedSubject.next(true);
   }
 
   /**
-   * Change password
+   * Get stored user
    */
-  changePassword(passwordData: ChangePasswordRequest): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/change-password`, passwordData)
-      .pipe(
-        catchError(this.handleError)
-      );
+  private getStoredUser(): User | null {
+    if (!this.isBrowser) return null;
+
+    const userStr = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
+    if (!userStr) return null;
+
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      return null;
+    }
   }
 
   /**
-   * Request password reset
+   * Handle HTTP errors
    */
-  requestPasswordReset(email: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/forgot-password`, { email })
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'An error occurred';
 
-  /**
-   * Reset password with token
-   */
-  resetPassword(token: string, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/reset-password`, {
-      token,
-      newPassword
-    }).pipe(
-      catchError(this.handleError)
-    );
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || `Error Code: ${error.status}\nMessage: ${error.message}`;
+    }
+
+    console.error('Auth Error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }
-
