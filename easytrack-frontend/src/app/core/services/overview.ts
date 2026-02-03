@@ -52,7 +52,7 @@ export interface OverviewData {
 })
 export class OverviewService {
   private apiUrl = 'http://localhost:8080/api/dashboard'; // Spring Boot API
-  private readonly USE_MOCK_DATA = false; // Set to true for development without backend
+  private readonly USE_MOCK_DATA = true; // Set to false after login is implemented
 
   constructor(private http: HttpClient) {}
 

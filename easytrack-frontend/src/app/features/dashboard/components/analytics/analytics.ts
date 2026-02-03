@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 
@@ -76,7 +76,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   private categoryChart?: Chart;
   private cashFlowChart?: Chart;
 
-  constructor() {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit(): void {
     this.loadAnalytics();
@@ -108,6 +108,11 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
    * Initialize all charts
    */
   private initializeCharts(): void {
+    // Only run in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    
     this.createIncomeExpenseChart();
     this.createCategoryChart();
     this.createCashFlowChart();
@@ -117,7 +122,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
    * Create Income vs Expense Chart
    */
   private createIncomeExpenseChart(): void {
-    if (!this.incomeExpenseChartRef) return;
+    if (!isPlatformBrowser(this.platformId) || !this.incomeExpenseChartRef) return;
 
     // Destroy existing chart
     if (this.incomeExpenseChart) {
@@ -214,7 +219,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
    * Create Category Breakdown Chart
    */
   private createCategoryChart(): void {
-    if (!this.categoryChartRef) return;
+    if (!isPlatformBrowser(this.platformId) || !this.categoryChartRef) return;
 
     if (this.categoryChart) {
       this.categoryChart.destroy();
@@ -293,7 +298,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
    * Create Cash Flow Chart
    */
   private createCashFlowChart(): void {
-    if (!this.cashFlowChartRef) return;
+    if (!isPlatformBrowser(this.platformId) || !this.cashFlowChartRef) return;
 
     if (this.cashFlowChart) {
       this.cashFlowChart.destroy();

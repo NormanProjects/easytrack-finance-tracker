@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { OverviewService } from '../../../../core/services/overview';
@@ -88,7 +88,8 @@ export class OverviewComponent implements OnInit, AfterViewInit {
 
   constructor(
     private router: Router,
-    private overviewService: OverviewService
+    private overviewService: OverviewService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
@@ -132,6 +133,11 @@ export class OverviewComponent implements OnInit, AfterViewInit {
    * Initialize spending trend chart
    */
   private initializeSpendingChart(): void {
+    // Only run in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     if (!this.spendingChartRef) return;
 
     if (this.spendingChart) {
