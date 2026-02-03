@@ -6,15 +6,19 @@ import { HeaderComponent } from '../components/header/header';
 import { Router } from '@angular/router';
 import { User } from '../../../core/models/user.model';
 import { BudgetComponent } from '../components/budget/budget';
-import { Overview } from '../components/overview/overview';
+import { OverviewComponent } from '../components/overview/overview';
+import { TransactionsComponent } from '../components/transactions/transactions';
+import { AnalyticsComponent } from '../components/analytics/analytics';
 
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule,
     SidebarComponent,
     HeaderComponent,
-    Overview,
+    OverviewComponent,
     BudgetComponent,
+    TransactionsComponent,
+    AnalyticsComponent
     ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',

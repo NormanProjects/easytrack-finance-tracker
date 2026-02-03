@@ -76,7 +76,7 @@
       </div>
       <div class="card-content">
         <div class="card-label">Total Transactions</div>
-        <div class="card-value">{{ filteredTransactions.length }}</div>
+        <div class="card-value">{{ totalCount }}</div>
       </div>
     </div>
   </div>
@@ -170,7 +170,7 @@
         </thead>
         <tbody>
           <tr 
-            *ngFor="let transaction of getPaginatedTransactions(); trackBy: trackByTransactionId"
+            *ngFor="let transaction of filteredTransactions; trackBy: trackByTransactionId"
             class="transaction-row"
           >
             <td class="date-cell">{{ transaction.date | date:'MMM d, y' }}</td>
@@ -227,13 +227,13 @@
 
       <div class="pagination-pages">
         <button 
-          *ngFor="let page of [].constructor(totalPages); let i = index"
+          *ngFor="let page of getPageNumbers()"
           class="pagination-page"
-          [class.active]="currentPage === i + 1"
-          (click)="goToPage(i + 1)"
+          [class.active]="currentPage === page"
+          (click)="goToPage(page)"
           type="button"
         >
-          {{ i + 1 }}
+          {{ page }}
         </button>
       </div>
 

@@ -11,7 +11,7 @@ import { Transaction, TransactionFilter, TransactionService } from '../../../../
 })
 export class TransactionsComponent implements OnInit {
   transactions: Transaction[] = [];
-  filteredTransactions: Transaction[] = [];
+  filteredTransactions: Transaction[] = []; // ADDED: For filtered results
   isLoading: boolean = true;
   isUploading: boolean = false;
   errorMessage: string = '';
@@ -75,6 +75,7 @@ export class TransactionsComponent implements OnInit {
     this.transactionService.getTransactions(this.filter).subscribe({
       next: (response) => {
         this.transactions = response.transactions;
+        this.filteredTransactions = response.transactions; // ADDED: Set filtered transactions
         this.totalCount = response.totalCount;
         this.totalPages = response.totalPages;
         this.currentPage = response.currentPage;
@@ -161,7 +162,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   /**
-   * Pagination methods - FIXED NAMES
+   * Pagination methods
    */
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
@@ -184,7 +185,6 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
-  // FIXED: Changed from changePage to changePageSize
   changePageSize(size: number): void {
     this.filter.size = size;
     this.filter.page = 1;
