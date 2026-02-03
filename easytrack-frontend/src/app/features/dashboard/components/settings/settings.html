@@ -1,0 +1,476 @@
+<div class="settings-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">Manage your account and preferences</p>
+    </div>
+  </div>
+
+  <!-- Settings Navigation Tabs -->
+  <div class="settings-tabs">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'profile'"
+      (click)="activeTab = 'profile'"
+      type="button"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+      </svg>
+      Profile
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'preferences'"
+      (click)="activeTab = 'preferences'"
+      type="button"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+      </svg>
+      Preferences
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'security'"
+      (click)="activeTab = 'security'"
+      type="button"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      </svg>
+      Security
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'notifications'"
+      (click)="activeTab = 'notifications'"
+      type="button"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+      </svg>
+      Notifications
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'data'"
+      (click)="activeTab = 'data'"
+      type="button"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z"/>
+        <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z"/>
+        <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z"/>
+      </svg>
+      Data & Privacy
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="settings-content">
+    
+    <!-- Profile Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'profile'">
+      <div class="settings-section">
+        <h2 class="section-title">Profile Information</h2>
+        <p class="section-description">Update your account profile information</p>
+
+        <!-- Profile Picture -->
+        <div class="profile-picture-section">
+          <div class="profile-avatar">
+            <img *ngIf="profilePictureUrl" [src]="profilePictureUrl" alt="Profile">
+            <div *ngIf="!profilePictureUrl" class="avatar-placeholder">
+              {{ getInitials() }}
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button class="btn-secondary" (click)="triggerFileUpload()" type="button">
+              Change Photo
+            </button>
+            <button class="btn-text" (click)="removeProfilePicture()" type="button" *ngIf="profilePictureUrl">
+              Remove
+            </button>
+            <input 
+              type="file" 
+              #fileInput 
+              accept="image/*" 
+              (change)="onProfilePictureChange($event)"
+              style="display: none;"
+            >
+          </div>
+        </div>
+
+        <!-- Profile Form -->
+        <form class="settings-form" (ngSubmit)="saveProfile()" #profileForm="ngForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input 
+                type="text" 
+                id="firstName" 
+                name="firstName"
+                [(ngModel)]="profile.firstName"
+                required
+                class="form-input"
+              >
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input 
+                type="text" 
+                id="lastName" 
+                name="lastName"
+                [(ngModel)]="profile.lastName"
+                required
+                class="form-input"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email"
+              [(ngModel)]="profile.email"
+              required
+              email
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone"
+              [(ngModel)]="profile.phone"
+              class="form-input"
+              placeholder="+27 123 456 7890"
+            >
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="!profileForm.valid || isSaving">
+              <span *ngIf="!isSaving">Save Changes</span>
+              <span *ngIf="isSaving" class="loading-text">
+                <span class="spinner-small"></span>
+                Saving...
+              </span>
+            </button>
+            <button type="button" class="btn-secondary" (click)="resetProfile()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preferences Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'preferences'">
+      <div class="settings-section">
+        <h2 class="section-title">App Preferences</h2>
+        <p class="section-description">Customize your app experience</p>
+
+        <form class="settings-form" (ngSubmit)="savePreferences()">
+          <!-- Currency -->
+          <div class="preference-item">
+            <div class="preference-info">
+              <div class="preference-label">Currency</div>
+              <div class="preference-description">Select your preferred currency</div>
+            </div>
+            <select [(ngModel)]="preferences.currency" name="currency" class="preference-select">
+              <option value="ZAR">ZAR - South African Rand</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="JPY">JPY - Japanese Yen</option>
+            </select>
+          </div>
+
+          <!-- Date Format -->
+          <div class="preference-item">
+            <div class="preference-info">
+              <div class="preference-label">Date Format</div>
+              <div class="preference-description">How dates are displayed</div>
+            </div>
+            <select [(ngModel)]="preferences.dateFormat" name="dateFormat" class="preference-select">
+              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            </select>
+          </div>
+
+          <!-- Theme -->
+          <div class="preference-item">
+            <div class="preference-info">
+              <div class="preference-label">Theme</div>
+              <div class="preference-description">Choose your color theme</div>
+            </div>
+            <select [(ngModel)]="preferences.theme" name="theme" class="preference-select">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+              <option value="auto">Auto (System)</option>
+            </select>
+          </div>
+
+          <!-- Language -->
+          <div class="preference-item">
+            <div class="preference-info">
+              <div class="preference-label">Language</div>
+              <div class="preference-description">App language</div>
+            </div>
+            <select [(ngModel)]="preferences.language" name="language" class="preference-select">
+              <option value="en">English</option>
+              <option value="af">Afrikaans</option>
+              <option value="zu">Zulu</option>
+              <option value="xh">Xhosa</option>
+            </select>
+          </div>
+
+          <!-- Start of Week -->
+          <div class="preference-item">
+            <div class="preference-info">
+              <div class="preference-label">Start of Week</div>
+              <div class="preference-description">First day of the week</div>
+            </div>
+            <select [(ngModel)]="preferences.startOfWeek" name="startOfWeek" class="preference-select">
+              <option value="sunday">Sunday</option>
+              <option value="monday">Monday</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSaving">
+              <span *ngIf="!isSaving">Save Preferences</span>
+              <span *ngIf="isSaving" class="loading-text">
+                <span class="spinner-small"></span>
+                Saving...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Security Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'security'">
+      <div class="settings-section">
+        <h2 class="section-title">Security Settings</h2>
+        <p class="section-description">Manage your account security</p>
+
+        <!-- Change Password -->
+        <form class="settings-form" (ngSubmit)="changePassword()" #passwordForm="ngForm">
+          <h3 class="subsection-title">Change Password</h3>
+          
+          <div class="form-group">
+            <label for="currentPassword">Current Password</label>
+            <input 
+              type="password" 
+              id="currentPassword" 
+              name="currentPassword"
+              [(ngModel)]="passwordData.currentPassword"
+              required
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input 
+              type="password" 
+              id="newPassword" 
+              name="newPassword"
+              [(ngModel)]="passwordData.newPassword"
+              required
+              minlength="8"
+              class="form-input"
+            >
+            <div class="input-hint">Must be at least 8 characters</div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              name="confirmPassword"
+              [(ngModel)]="passwordData.confirmPassword"
+              required
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="!passwordForm.valid || isSaving">
+              Update Password
+            </button>
+          </div>
+        </form>
+
+        <!-- Two-Factor Authentication -->
+        <div class="security-option">
+          <div class="option-info">
+            <h3 class="subsection-title">Two-Factor Authentication</h3>
+            <p class="option-description">Add an extra layer of security to your account</p>
+          </div>
+          <div class="option-action">
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="security.twoFactorEnabled" (change)="toggleTwoFactor()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="active-sessions">
+          <h3 class="subsection-title">Active Sessions</h3>
+          <p class="section-description">Manage your active sessions across devices</p>
+          
+          <div class="session-list">
+            <div class="session-item" *ngFor="let session of activeSessions">
+              <div class="session-icon">
+                <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="session-info">
+                <div class="session-device">{{ session.device }}</div>
+                <div class="session-details">{{ session.location }} • {{ session.lastActive }}</div>
+              </div>
+              <button class="btn-text-danger" (click)="revokeSession(session.id)" type="button">
+                Revoke
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'notifications'">
+      <div class="settings-section">
+        <h2 class="section-title">Notification Preferences</h2>
+        <p class="section-description">Choose what notifications you want to receive</p>
+
+        <form class="settings-form">
+          <!-- Email Notifications -->
+          <div class="notification-group">
+            <h3 class="subsection-title">Email Notifications</h3>
+            
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Transaction Alerts</div>
+                <div class="notification-description">Get notified about new transactions</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="notifications.email.transactions" name="emailTransactions">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Budget Warnings</div>
+                <div class="notification-description">Alerts when approaching budget limits</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="notifications.email.budgets" name="emailBudgets">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Weekly Summary</div>
+                <div class="notification-description">Weekly financial summary report</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="notifications.email.weeklySummary" name="emailWeekly">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Push Notifications -->
+          <div class="notification-group">
+            <h3 class="subsection-title">Push Notifications</h3>
+            
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Large Transactions</div>
+                <div class="notification-description">Alert for transactions over R1,000</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="notifications.push.largeTransactions" name="pushLarge">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Bill Reminders</div>
+                <div class="notification-description">Remind me about upcoming bills</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="notifications.push.billReminders" name="pushBills">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" (click)="saveNotifications()" [disabled]="isSaving">
+              Save Notification Settings
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Data & Privacy Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'data'">
+      <div class="settings-section">
+        <h2 class="section-title">Data & Privacy</h2>
+        <p class="section-description">Manage your data and privacy settings</p>
+
+        <!-- Export Data -->
+        <div class="data-action-card">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <h3 class="action-title">Export Your Data</h3>
+            <p class="action-description">Download all your financial data in CSV format</p>
+            <button class="btn-secondary" (click)="exportAllData()" type="button">
+              Export Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Delete Account -->
+        <div class="data-action-card danger">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <h3 class="action-title">Delete Account</h3>
+            <p class="action-description">Permanently delete your account and all data</p>
+            <button class="btn-danger" (click)="deleteAccount()" type="button">
+              Delete Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
