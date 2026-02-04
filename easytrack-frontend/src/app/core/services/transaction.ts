@@ -5,6 +5,8 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface Transaction {
+  accountId: number;
+  categoryId: number;
   id: string;
   date: Date;
   description: string;
@@ -48,6 +50,12 @@ export interface CreateTransactionRequest {
   providedIn: 'root'
 })
 export class TransactionService {
+  update(id: string, formData: Transaction) {
+    throw new Error('Method not implemented.');
+  }
+  create(formData: Transaction) {
+    throw new Error('Method not implemented.');
+  }
   private readonly API_URL = `${environment.apiUrl}/api/transactions`;
 
   constructor(private http: HttpClient) {}

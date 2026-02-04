@@ -9,6 +9,7 @@ import { BudgetComponent } from '../components/budget/budget';
 import { OverviewComponent } from '../components/overview/overview';
 import { TransactionsComponent } from '../components/transactions/transactions';
 import { AnalyticsComponent } from '../components/analytics/analytics';
+import { SettingsComponent } from '../components/settings/settings';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,7 +19,8 @@ import { AnalyticsComponent } from '../components/analytics/analytics';
     OverviewComponent,
     BudgetComponent,
     TransactionsComponent,
-    AnalyticsComponent
+    AnalyticsComponent,
+    SettingsComponent,
     ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',

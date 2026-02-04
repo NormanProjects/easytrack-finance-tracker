@@ -7,6 +7,7 @@ import { OverviewComponent } from './features/dashboard/components/overview/over
 import { Component } from '@angular/core';
 import { AnalyticsComponent } from './features/dashboard/components/analytics/analytics';
 import { TransactionsComponent } from './features/dashboard/components/transactions/transactions';
+import { SettingsComponent } from './features/dashboard/components/settings/settings';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -35,6 +36,10 @@ export const routes: Routes = [
   {
     path: 'transactions',
     component: TransactionsComponent
+  },
+  {
+    path: 'settings',
+    component: SettingsComponent
   },
   // Protected routes
   {
