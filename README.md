@@ -83,7 +83,7 @@ This project demonstrates proficiency in modern full-stack development:
 ##  Screenshots
 
 ### Dashboard
-![Dashboard](docs/assets/screenshots/dashboard.png)
+![Dashboard](easytrack-frontend/src/assets/images/Dashboard.png)
 *Real-time financial overview with "Safe to Spend" calculations*
 
 ### Transaction Management
