@@ -1,26 +1,77 @@
 import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { Account, AccountType } from '../../../core/models/account.model';
 import { AccountService } from '../../../core/services/account';
 
 @Component({
   selector: 'app-account-list',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyPipe],
   templateUrl: './account-list.html',
   styleUrl: './account-list.css',
 })
 export class AccountsListComponent implements OnInit {
   accounts: Account[] = [];
   totalBalance: number = 0;
+  totalAssets: number = 0;
+  totalLiabilities: number = 0;
   isLoading: boolean = false;
   showForm: boolean = false;
   editingAccount: Account | null = null;
 
   // Form data
   accountForm: Account = this.getEmptyAccount();
-  accountTypes = Object.values(AccountType);
+  
+  // Account types with metadata
+  AccountType = AccountType;
+  accountTypes = [
+    { 
+      value: AccountType.CASH, 
+      label: 'Cash', 
+      icon: '💵',
+      description: 'Physical cash and petty cash',
+      isAsset: true
+    },
+    { 
+      value: AccountType.BANK, 
+      label: 'Bank Account', 
+      icon: '🏦',
+      description: 'Checking and savings accounts',
+      isAsset: true
+    },
+    { 
+      value: AccountType.CREDIT_CARD, 
+      label: 'Credit Card', 
+      icon: '💳',
+      description: 'Credit card balances',
+      isAsset: false
+    },
+    { 
+      value: AccountType.SAVINGS, 
+      label: 'Savings', 
+      icon: '🏦',
+      description: 'High-yield savings accounts',
+      isAsset: true
+    },
+    { 
+      value: AccountType.INVESTMENT, 
+      label: 'Investment', 
+      icon: '📈',
+      description: 'Stocks, bonds, and portfolios',
+      isAsset: true
+    }
+  ];
+
+  // Available currencies
+  currencies = [
+    { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'GBP', symbol: '£', name: 'British Pound' }
+  ];
+
+  // Expose Math for template
+  Math = Math;
 
   constructor(
     private accountService: AccountService,
@@ -29,17 +80,17 @@ export class AccountsListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAccounts();
-    this.loadTotalBalance();
   }
 
   /**
-   * Load all accounts
+   * Load all accounts and calculate totals
    */
   loadAccounts(): void {
     this.isLoading = true;
     this.accountService.getAll().subscribe({
       next: (accounts) => {
         this.accounts = accounts;
+        this.calculateTotals();
         this.isLoading = false;
       },
       error: (error) => {
@@ -51,17 +102,44 @@ export class AccountsListComponent implements OnInit {
   }
 
   /**
-   * Load total balance
+   * Calculate total balance, assets, and liabilities
    */
-  loadTotalBalance(): void {
-    this.accountService.getTotalBalance().subscribe({
-      next: (balance) => {
-        this.totalBalance = balance;
-      },
-      error: (error) => {
-        console.error('Error loading total balance:', error);
+  calculateTotals(): void {
+    this.totalAssets = 0;
+    this.totalLiabilities = 0;
+
+    this.accounts.forEach(account => {
+      if (account.active) {
+        if (account.type === AccountType.CREDIT_CARD) {
+          // Credit cards are liabilities (negative balance)
+          this.totalLiabilities += Math.abs(account.balance);
+        } else {
+          // All other accounts are assets
+          this.totalAssets += account.balance;
+        }
       }
     });
+
+    this.totalBalance = this.totalAssets - this.totalLiabilities;
+  }
+
+  /**
+   * Get accounts grouped by type
+   */
+  getAssetAccounts(): Account[] {
+    return this.accounts.filter(a => 
+      a.type !== AccountType.CREDIT_CARD && a.active
+    );
+  }
+
+  getLiabilityAccounts(): Account[] {
+    return this.accounts.filter(a => 
+      a.type === AccountType.CREDIT_CARD && a.active
+    );
+  }
+
+  getInactiveAccounts(): Account[] {
+    return this.accounts.filter(a => !a.active);
   }
 
   /**
@@ -99,7 +177,6 @@ export class AccountsListComponent implements OnInit {
           this.showSuccess('Account updated successfully');
           this.closeForm();
           this.loadAccounts();
-          this.loadTotalBalance();
         },
         error: (error) => {
           console.error('Error updating account:', error);
@@ -114,7 +191,6 @@ export class AccountsListComponent implements OnInit {
           this.showSuccess('Account created successfully');
           this.closeForm();
           this.loadAccounts();
-          this.loadTotalBalance();
         },
         error: (error) => {
           console.error('Error creating account:', error);
@@ -131,7 +207,7 @@ export class AccountsListComponent implements OnInit {
   deleteAccount(account: Account): void {
     if (!account.id) return;
 
-    if (!confirm(`Are you sure you want to delete "${account.name}"?`)) {
+    if (!confirm(`Are you sure you want to delete "${account.name}"? This action cannot be undone.`)) {
       return;
     }
 
@@ -140,12 +216,31 @@ export class AccountsListComponent implements OnInit {
       next: () => {
         this.showSuccess('Account deleted successfully');
         this.loadAccounts();
-        this.loadTotalBalance();
       },
       error: (error) => {
         console.error('Error deleting account:', error);
         this.showError('Failed to delete account');
         this.isLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Toggle account active status
+   */
+  toggleAccountStatus(account: Account): void {
+    if (!account.id) return;
+
+    const updatedAccount = { ...account, active: !account.active };
+    
+    this.accountService.update(account.id, updatedAccount).subscribe({
+      next: () => {
+        this.showSuccess(`Account ${updatedAccount.active ? 'activated' : 'deactivated'}`);
+        this.loadAccounts();
+      },
+      error: (error) => {
+        console.error('Error toggling account status:', error);
+        this.showError('Failed to update account status');
       }
     });
   }
@@ -174,7 +269,7 @@ export class AccountsListComponent implements OnInit {
     }
 
     if (this.accountForm.balance === null || this.accountForm.balance === undefined) {
-      this.showError('Initial balance is required');
+      this.showError('Balance is required');
       return false;
     }
 
@@ -195,27 +290,28 @@ export class AccountsListComponent implements OnInit {
   }
 
   /**
-   * Get account icon
+   * Get account type metadata
    */
-  getAccountIcon(type: AccountType): string {
-    const icons: { [key in AccountType]: string } = {
-      [AccountType.CASH]: '💵',
-      [AccountType.BANK]: '🏦',
-      [AccountType.CREDIT_CARD]: '💳',
-      [AccountType.SAVINGS]: '🏦',
-      [AccountType.INVESTMENT]: '📈'
-    };
-    return icons[type] || '💰';
+  getAccountTypeMetadata(type: AccountType) {
+    return this.accountTypes.find(t => t.value === type);
   }
 
   /**
-   * Format account type for display
+   * Format currency
    */
-  formatAccountType(type: AccountType): string {
-    return type.replace(/_/g, ' ').toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  getCurrencySymbol(code: string): string {
+    const currency = this.currencies.find(c => c.code === code);
+    return currency ? currency.symbol : 'R';
+  }
+
+  /**
+   * Get balance color class
+   */
+  getBalanceClass(account: Account): string {
+    if (account.type === AccountType.CREDIT_CARD) {
+      return account.balance >= 0 ? 'positive' : 'negative';
+    }
+    return account.balance >= 0 ? 'positive' : 'negative';
   }
 
   /**

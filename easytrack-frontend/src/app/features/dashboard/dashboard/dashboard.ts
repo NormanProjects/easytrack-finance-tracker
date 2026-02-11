@@ -10,6 +10,7 @@ import { OverviewComponent } from '../components/overview/overview';
 import { TransactionsComponent } from '../components/transactions/transactions';
 import { AnalyticsComponent } from '../components/analytics/analytics';
 import { SettingsComponent } from '../components/settings/settings';
+import { AccountsListComponent } from '../../accounts/account-list/account-list';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +22,7 @@ import { SettingsComponent } from '../components/settings/settings';
     TransactionsComponent,
     AnalyticsComponent,
     SettingsComponent,
+    AccountsListComponent
     ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',

@@ -9,6 +9,7 @@ import { AnalyticsComponent } from './features/dashboard/components/analytics/an
 import { TransactionsComponent } from './features/dashboard/components/transactions/transactions';
 import { SettingsComponent } from './features/dashboard/components/settings/settings';
 import { CategoriesListComponent} from './features/categories/category-list/category-list';
+import { AccountsListComponent } from './features/accounts/account-list/account-list';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -29,6 +30,10 @@ export const routes: Routes = [
   {
     path: 'overview',
     component: OverviewComponent
+  },
+  {
+    path: 'accounts',
+    component: AccountsListComponent
   },
   {
   path: 'categories',
