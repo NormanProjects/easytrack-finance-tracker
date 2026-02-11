@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type DashboardView = 'overview' | 'transactions' | 'budget' | 'analytics' | 'settings';
+export type DashboardView = 'overview' | 'transactions' | 'budget' | 'analytics' | 'settings' | 'categories';
 
 @Component({
   selector: 'app-sidebar',

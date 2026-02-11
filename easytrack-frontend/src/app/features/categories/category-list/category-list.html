@@ -1,1 +1,279 @@
-<p>category-list works!</p>
+<div class="categories-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Categories</h1>
+      <p class="page-subtitle">Organize your transactions with categories</p>
+    </div>
+  </div>
+
+  <!-- Category Stats -->
+  <div class="category-stats">
+    <div class="stat-card income">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <div class="stat-label">Income Categories</div>
+        <div class="stat-value">{{ getCategoryCount(CategoryType.INCOME) }}</div>
+      </div>
+    </div>
+    <div class="stat-card expense">
+      <div class="stat-icon">💸</div>
+      <div class="stat-content">
+        <div class="stat-label">Expense Categories</div>
+        <div class="stat-value">{{ getCategoryCount(CategoryType.EXPENSE) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading && categories.length === 0">
+    <div class="spinner"></div>
+    <p>Loading categories...</p>
+  </div>
+
+  <!-- Income Categories -->
+  <div class="category-section" *ngIf="!isLoading || incomeCategories.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-icon">💰</span>
+        Income Categories
+      </h2>
+      <button class="btn-primary" (click)="openNewCategoryForm(CategoryType.INCOME)">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+        </svg>
+        Add Income Category
+      </button>
+    </div>
+
+    <div class="categories-grid">
+      <div 
+        class="category-card" 
+        *ngFor="let category of incomeCategories"
+        [style.border-color]="category.color"
+      >
+        <div class="category-header">
+          <div class="category-icon" [style.background-color]="category.color + '20'">
+            {{ category.icon || '📁' }}
+          </div>
+          <div class="category-info">
+            <h3 class="category-name">{{ category.name }}</h3>
+            <span class="category-badge default" *ngIf="category.isDefault">Default</span>
+          </div>
+          <div class="category-actions">
+            <button class="icon-btn" (click)="editCategory(category)" title="Edit">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+              </svg>
+            </button>
+            <button 
+              class="icon-btn danger" 
+              (click)="deleteCategory(category)" 
+              title="Delete"
+              [disabled]="category.isDefault"
+            >
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="category-footer">
+          <div class="color-indicator" [style.background-color]="category.color"></div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state-small" *ngIf="incomeCategories.length === 0 && !isLoading">
+        <p>No income categories yet</p>
+        <button class="btn-text" (click)="openNewCategoryForm(CategoryType.INCOME)">
+          Add your first income category
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Categories -->
+  <div class="category-section" *ngIf="!isLoading || expenseCategories.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-icon">💸</span>
+        Expense Categories
+      </h2>
+      <button class="btn-primary" (click)="openNewCategoryForm(CategoryType.EXPENSE)">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+        </svg>
+        Add Expense Category
+      </button>
+    </div>
+
+    <div class="categories-grid">
+      <div 
+        class="category-card" 
+        *ngFor="let category of expenseCategories"
+        [style.border-color]="category.color"
+      >
+        <div class="category-header">
+          <div class="category-icon" [style.background-color]="category.color + '20'">
+            {{ category.icon || '📁' }}
+          </div>
+          <div class="category-info">
+            <h3 class="category-name">{{ category.name }}</h3>
+            <span class="category-badge default" *ngIf="category.isDefault">Default</span>
+          </div>
+          <div class="category-actions">
+            <button class="icon-btn" (click)="editCategory(category)" title="Edit">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+              </svg>
+            </button>
+            <button 
+              class="icon-btn danger" 
+              (click)="deleteCategory(category)" 
+              title="Delete"
+              [disabled]="category.isDefault"
+            >
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="category-footer">
+          <div class="color-indicator" [style.background-color]="category.color"></div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state-small" *ngIf="expenseCategories.length === 0 && !isLoading">
+        <p>No expense categories yet</p>
+        <button class="btn-text" (click)="openNewCategoryForm(CategoryType.EXPENSE)">
+          Add your first expense category
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Form Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingCategory ? 'Edit Category' : 'New Category' }}</h2>
+        <button class="close-btn" (click)="closeForm()">
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="category-form" (ngSubmit)="saveCategory()">
+        <!-- Category Name -->
+        <div class="form-group">
+          <label for="categoryName">Category Name *</label>
+          <input
+            type="text"
+            id="categoryName"
+            name="categoryName"
+            [(ngModel)]="categoryForm.name"
+            required
+            class="form-input"
+            placeholder="e.g., Groceries, Salary"
+          >
+        </div>
+
+        <!-- Category Type -->
+        <div class="form-group">
+          <label for="categoryType">Type *</label>
+          <select
+            id="categoryType"
+            name="categoryType"
+            [(ngModel)]="categoryForm.type"
+            required
+            class="form-select"
+            [disabled]="editingCategory !== null"
+          >
+            <option *ngFor="let type of categoryTypes" [value]="type.value">
+              {{ type.icon }} {{ type.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Icon & Color Selection -->
+        <div class="form-row">
+          <!-- Icon Picker -->
+          <div class="form-group">
+            <label>Icon</label>
+            <div class="picker-container">
+              <button 
+                type="button" 
+                class="picker-trigger"
+                (click)="toggleIconPicker()"
+              >
+                <span class="selected-icon">{{ categoryForm.icon || '📁' }}</span>
+                <span>Change Icon</span>
+              </button>
+              
+              <div class="picker-dropdown icon-picker" *ngIf="showIconPicker">
+                <div class="icon-grid">
+                  <button
+                    type="button"
+                    class="icon-option"
+                    *ngFor="let icon of availableIcons"
+                    (click)="selectIcon(icon)"
+                    [class.selected]="categoryForm.icon === icon"
+                  >
+                    {{ icon }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Picker -->
+          <div class="form-group">
+            <label>Color</label>
+            <div class="picker-container">
+              <button 
+                type="button" 
+                class="picker-trigger"
+                (click)="toggleColorPicker()"
+              >
+                <span 
+                  class="color-preview" 
+                  [style.background-color]="categoryForm.color"
+                ></span>
+                <span>Change Color</span>
+              </button>
+              
+              <div class="picker-dropdown color-picker" *ngIf="showColorPicker">
+                <div class="color-grid">
+                  <button
+                    type="button"
+                    class="color-option"
+                    *ngFor="let color of availableColors"
+                    [style.background-color]="color"
+                    (click)="selectColor(color)"
+                    [class.selected]="categoryForm.color === color"
+                  >
+                    <svg *ngIf="categoryForm.color === color" width="16" height="16" viewBox="0 0 20 20" fill="white">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Saving...' : (editingCategory ? 'Update' : 'Create') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

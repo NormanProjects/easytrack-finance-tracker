@@ -1,1 +1,141 @@
-<p>transaction-form works!</p>
+<div class="modal-overlay" *ngIf="show" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ transaction ? 'Edit Transaction' : 'New Transaction' }}</h2>
+      <button class="close-btn" (click)="closeModal()" type="button">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <form class="transaction-form" (ngSubmit)="saveTransaction()">
+      <!-- Transaction Type Toggle -->
+      <div class="type-toggle">
+        <button
+          *ngFor="let type of transactionTypes"
+          type="button"
+          class="type-btn"
+          [class.active]="formData.type === type.value"
+          [style.--type-color]="type.color"
+          (click)="formData.type = type.value; onTypeChange()"
+        >
+          <span class="type-icon">{{ type.icon }}</span>
+          <span class="type-label">{{ type.label }}</span>
+        </button>
+      </div>
+
+      <!-- Amount -->
+      <div class="form-group amount-group">
+        <label for="amount">Amount *</label>
+        <div class="amount-input-wrapper">
+          <span class="currency-symbol">R</span>
+          <input
+            type="number"
+            id="amount"
+            name="amount"
+            [(ngModel)]="formData.amount"
+            step="0.01"
+            min="0"
+            required
+            class="form-input amount-input"
+            placeholder="0.00"
+          >
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <input
+          type="text"
+          id="description"
+          name="description"
+          [(ngModel)]="formData.description"
+          required
+          class="form-input"
+          placeholder="e.g., Grocery Shopping"
+        >
+      </div>
+
+      <!-- Account & Category -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="account">Account *</label>
+          <select
+            id="account"
+            name="account"
+            [(ngModel)]="formData.accountId"
+            (ngModelChange)="onAccountChange()"
+            required
+            class="form-select"
+          >
+            <option [value]="0" disabled>Select Account</option>
+            <option *ngFor="let account of accounts" [value]="account.id">
+              {{ account.name }} ({{ account.balance | currency:'ZAR':'symbol':'1.0-0' }})
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <select
+            id="category"
+            name="category"
+            [(ngModel)]="formData.categoryId"
+            (ngModelChange)="onCategoryChange()"
+            required
+            class="form-select"
+          >
+            <option [value]="0" disabled>Select Category</option>
+            <option *ngFor="let category of filteredCategories" [value]="category.id">
+              {{ category.icon || '📁' }} {{ category.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label for="date">Date *</label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          [(ngModel)]="formData.date"
+          required
+          class="form-input"
+        >
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label for="notes">Notes (Optional)</label>
+        <textarea
+          id="notes"
+          name="notes"
+          [(ngModel)]="formData.notes"
+          rows="3"
+          class="form-textarea"
+          placeholder="Add any additional details..."
+        ></textarea>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="isSaving">
+          <span *ngIf="!isSaving">
+            {{ transaction ? 'Update' : 'Create' }}
+          </span>
+          <span *ngIf="isSaving" class="loading-text">
+            <span class="spinner-small"></span>
+            Saving...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
