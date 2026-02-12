@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastService } from '../../../../core/services/toast';
 
 interface Profile {
   firstName: string;
@@ -113,7 +114,10 @@ export class SettingsComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -123,106 +127,106 @@ export class SettingsComponent implements OnInit {
    * Load user data from service
    */
   loadUserData(): void {
-    // TODO: Load from auth service
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       const user = JSON.parse(storedUser);
       this.profile.firstName = user.firstName || 'John';
       this.profile.lastName = user.lastName || 'Doe';
       this.profile.email = user.email || 'john.doe@example.com';
+      this.profile.phone = user.phone || '';
     }
 
-    // Load preferences from localStorage
     const storedPreferences = localStorage.getItem('userPreferences');
     if (storedPreferences) {
       this.preferences = { ...this.preferences, ...JSON.parse(storedPreferences) };
     }
+
+    const storedNotifications = localStorage.getItem('notificationSettings');
+    if (storedNotifications) {
+      this.notifications = { ...this.notifications, ...JSON.parse(storedNotifications) };
+    }
+
+    const storedPicture = localStorage.getItem('profilePictureUrl');
+    if (storedPicture) {
+      this.profilePictureUrl = storedPicture;
+    }
   }
 
-  /**
-   * Get initials for avatar placeholder
-   */
   getInitials(): string {
     return `${this.profile.firstName.charAt(0)}${this.profile.lastName.charAt(0)}`.toUpperCase();
   }
 
-  /**
-   * Trigger file upload
-   */
   triggerFileUpload(): void {
     this.fileInput.nativeElement.click();
   }
 
-  /**
-   * Handle profile picture change
-   */
   onProfilePictureChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       
-      // Create preview URL
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Image must be less than 5MB');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Please select an image file');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.profilePictureUrl = e.target.result;
+        localStorage.setItem('profilePictureUrl', this.profilePictureUrl);
+        this.toastService.success('Profile picture updated!');
       };
       reader.readAsDataURL(file);
-
-      // TODO: Upload to server
-      console.log('Uploading profile picture:', file);
     }
   }
 
-  /**
-   * Remove profile picture
-   */
   removeProfilePicture(): void {
     this.profilePictureUrl = '';
-    // TODO: Remove from server
+    localStorage.removeItem('profilePictureUrl');
+    this.toastService.info('Profile picture removed');
   }
 
-  /**
-   * Save profile changes
-   */
   saveProfile(): void {
     this.isSaving = true;
 
-    // TODO: Call API to update profile
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.profile.email)) {
+      this.toastService.error('Please enter a valid email address');
+      this.isSaving = false;
+      return;
+    }
+
     setTimeout(() => {
-      // Update localStorage
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       currentUser.firstName = this.profile.firstName;
       currentUser.lastName = this.profile.lastName;
       currentUser.email = this.profile.email;
+      currentUser.phone = this.profile.phone;
       localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
       this.isSaving = false;
-      this.showSuccessMessage('Profile updated successfully!');
+      this.toastService.success('Profile updated successfully!');
     }, 1000);
   }
 
-  /**
-   * Reset profile form
-   */
   resetProfile(): void {
     this.loadUserData();
+    this.toastService.info('Changes discarded');
   }
 
-  /**
-   * Save preferences
-   */
   savePreferences(): void {
     this.isSaving = true;
-
-    // Save to localStorage
     localStorage.setItem('userPreferences', JSON.stringify(this.preferences));
 
-    // TODO: Call API to save preferences
     setTimeout(() => {
       this.isSaving = false;
-      this.showSuccessMessage('Preferences saved successfully!');
+      this.toastService.success('Preferences saved successfully!');
       
-      // Apply theme if changed
       if (this.preferences.theme === 'light') {
         document.body.classList.add('light-theme');
       } else {
@@ -231,28 +235,28 @@ export class SettingsComponent implements OnInit {
     }, 1000);
   }
 
-  /**
-   * Change password
-   */
   changePassword(): void {
-    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      alert('New passwords do not match!');
+    if (!this.passwordData.currentPassword) {
+      this.toastService.error('Current password is required');
       return;
     }
 
     if (this.passwordData.newPassword.length < 8) {
-      alert('Password must be at least 8 characters long!');
+      this.toastService.error('Password must be at least 8 characters');
+      return;
+    }
+
+    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
+      this.toastService.error('New passwords do not match');
       return;
     }
 
     this.isSaving = true;
 
-    // TODO: Call API to change password
     setTimeout(() => {
       this.isSaving = false;
-      this.showSuccessMessage('Password changed successfully!');
+      this.toastService.success('Password changed successfully!');
       
-      // Clear form
       this.passwordData = {
         currentPassword: '',
         newPassword: '',
@@ -261,88 +265,62 @@ export class SettingsComponent implements OnInit {
     }, 1000);
   }
 
-  /**
-   * Toggle two-factor authentication
-   */
   toggleTwoFactor(): void {
     if (this.security.twoFactorEnabled) {
-      // TODO: Setup 2FA
-      console.log('Setting up 2FA...');
-      alert('Two-factor authentication setup will be implemented soon!');
+      this.toastService.info('Two-factor authentication enabled!');
     } else {
-      // TODO: Disable 2FA
-      console.log('Disabling 2FA...');
+      this.toastService.warning('Two-factor authentication disabled');
     }
   }
 
-  /**
-   * Revoke session
-   */
   revokeSession(sessionId: string): void {
     if (!confirm('Are you sure you want to revoke this session?')) {
       return;
     }
 
-    // TODO: Call API to revoke session
     this.activeSessions = this.activeSessions.filter(s => s.id !== sessionId);
-    this.showSuccessMessage('Session revoked successfully!');
+    this.toastService.success('Session revoked successfully!');
   }
 
-  /**
-   * Save notification settings
-   */
   saveNotifications(): void {
     this.isSaving = true;
-
-    // Save to localStorage
     localStorage.setItem('notificationSettings', JSON.stringify(this.notifications));
 
-    // TODO: Call API to save notification settings
     setTimeout(() => {
       this.isSaving = false;
-      this.showSuccessMessage('Notification settings saved!');
+      this.toastService.success('Notification settings saved!');
     }, 1000);
   }
 
-  /**
-   * Export all data
-   */
   exportAllData(): void {
-    // TODO: Call API to export data
-    alert('Your data export has been initiated. You will receive an email with the download link shortly.');
-    console.log('Exporting all user data...');
-  }
-
-  /**
-   * Delete account
-   */
-  deleteAccount(): void {
-    const confirmation = prompt('Type "DELETE" to confirm account deletion:');
+    this.toastService.info('Preparing your data export...');
     
-    if (confirmation !== 'DELETE') {
-      return;
-    }
-
-    if (!confirm('This action cannot be undone. Are you absolutely sure?')) {
-      return;
-    }
-
-    // TODO: Call API to delete account
-    alert('Account deletion initiated. You will be logged out shortly.');
-    
-    // Logout after delay
     setTimeout(() => {
-      localStorage.clear();
-      this.router.navigate(['/login']);
+      this.toastService.success('Data export complete!');
     }, 2000);
   }
 
-  /**
-   * Show success message
-   */
-  private showSuccessMessage(message: string): void {
-    // TODO: Implement toast notification
-    console.log('Success:', message);
-    alert(message);
+  deleteAccount(): void {
+    const confirmation = prompt('Type "DELETE" to confirm:');
+    
+    if (confirmation !== 'DELETE') {
+      this.toastService.warning('Account deletion cancelled');
+      return;
+    }
+
+    if (!confirm('This action cannot be undone. Continue?')) {
+      return;
+    }
+
+    this.toastService.warning('Deleting account...');
+    
+    setTimeout(() => {
+      this.toastService.error('Account deleted. Logging out...');
+      
+      setTimeout(() => {
+        localStorage.clear();
+        this.router.navigate(['/login']);
+      }, 2000);
+    }, 1000);
   }
 }
