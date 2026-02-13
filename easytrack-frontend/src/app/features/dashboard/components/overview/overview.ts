@@ -2,7 +2,10 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
-import { OverviewService } from '../../../../core/services/overview';
+import { DashboardService } from '../../../../core/services/dashboard';
+import { AuthService } from '../../../../core/services/auth';
+import { ToastService } from '../../../../core/services/toast';
+import { DashboardSummary } from '../../../../core/models/dashboard.model';
 
 Chart.register(...registerables);
 
@@ -60,10 +63,10 @@ interface Overview {
 export class OverviewComponent implements OnInit, AfterViewInit {
   @ViewChild('spendingChart') spendingChartRef!: ElementRef<HTMLCanvasElement>;
 
-  userName: string = 'John';
+  userName: string = 'User';
   currentDate: Date = new Date();
   isLoading: boolean = true;
-  Math = Math; // Make Math available in template
+  Math = Math;
 
   overview: Overview = {
     currentBalance: 0,
@@ -88,11 +91,14 @@ export class OverviewComponent implements OnInit, AfterViewInit {
 
   constructor(
     private router: Router,
-    private overviewService: OverviewService,
+    private dashboardService: DashboardService,
+    private authService: AuthService,
+    private toastService: ToastService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
+    this.loadUserName();
     this.loadOverviewData();
   }
 
@@ -101,15 +107,67 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Load overview data
+   * Load user name from auth service
+   */
+  loadUserName(): void {
+    // Option 1: Subscribe to currentUser$ observable
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.userName = user.firstName || user.name || 'User';
+        console.log('User name loaded:', this.userName);
+      }
+    });
+
+    // Option 2: Get from currentUserValue property
+    const currentUser = this.authService.currentUserValue;
+    if (currentUser) {
+      this.userName = currentUser.firstName || currentUser.name || 'User';
+    }
+
+    // Option 3: Fallback to localStorage
+    if (this.userName === 'User') {
+      const storedUser = localStorage.getItem('easytrack_user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          this.userName = userData.firstName || userData.name || 'User';
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
+    }
+  }
+
+  /**
+   * Load overview data from backend
    */
   loadOverviewData(): void {
     this.isLoading = true;
 
-    // Use service to load data
-    this.overviewService.getOverviewData().subscribe({
-      next: (data) => {
-        this.overview = data;
+    this.dashboardService.getSummary().subscribe({
+      next: (data: DashboardSummary) => {
+        console.log('Dashboard data loaded:', data);
+        
+        // Map backend data to overview format
+        this.overview = {
+          currentBalance: data.totalBalance || 0,
+          balanceChange: data.monthlyChange || 0,
+          monthlyIncome: data.monthlyIncome || 0,
+          incomeGrowth: data.incomeChange || 0,
+          monthlyExpenses: data.monthlyExpenses || 0,
+          expenseGrowth: data.expenseChange || 0,
+          totalSavings: data.totalSavings || 0,
+          savingsRate: data.savingsRate || 0,
+          largestExpense: 0, // TODO: Get from data
+          avgDailySpending: data.avgDailySpending || 0,
+          activeBudgets: data.activeBudgets || 0,
+          totalBudgets: data.totalBudgets || 0,
+          transactionsThisMonth: data.transactionsCount || 0,
+          recentTransactions: this.mapRecentTransactions(data.recentTransactions),
+          budgets: data.budgets || [],
+          goals: [] // TODO: Add goals endpoint
+        };
+
         this.isLoading = false;
         
         // Initialize chart after data is loaded
@@ -117,11 +175,16 @@ export class OverviewComponent implements OnInit, AfterViewInit {
           this.initializeSpendingChart();
         }, 100);
       },
-      error: (error) => {
-        console.error('Error loading overview data:', error);
+      error: (error: any) => {
+        console.error('Error loading dashboard data:', error);
         this.isLoading = false;
-        // Fall back to mock data
-        this.overview = this.generateMockData();
+        
+        // Show error toast
+        this.toastService.error('Failed to load dashboard data');
+        
+        // Set empty state
+        this.overview = this.getEmptyOverview();
+        
         setTimeout(() => {
           this.initializeSpendingChart();
         }, 100);
@@ -130,10 +193,49 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Map recent transactions from backend format
+   */
+  private mapRecentTransactions(transactions: any[]): RecentTransaction[] {
+    if (!transactions || transactions.length === 0) return [];
+    
+    return transactions.map((t: any) => ({
+      id: t.id,
+      description: t.description,
+      category: t.category,
+      amount: t.amount,
+      type: t.type,
+      date: new Date(t.date)
+    }));
+  }
+
+  /**
+   * Get empty overview state
+   */
+  private getEmptyOverview(): Overview {
+    return {
+      currentBalance: 0,
+      balanceChange: 0,
+      monthlyIncome: 0,
+      incomeGrowth: 0,
+      monthlyExpenses: 0,
+      expenseGrowth: 0,
+      totalSavings: 0,
+      savingsRate: 0,
+      largestExpense: 0,
+      avgDailySpending: 0,
+      activeBudgets: 0,
+      totalBudgets: 0,
+      transactionsThisMonth: 0,
+      recentTransactions: [],
+      budgets: [],
+      goals: []
+    };
+  }
+
+  /**
    * Initialize spending trend chart
    */
   private initializeSpendingChart(): void {
-    // Only run in browser environment
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
@@ -148,7 +250,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     if (!ctx) return;
 
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const data = [2450, 3890, 2100, 4200, 1850, 3450, 2900];
+    const data = [0, 0, 0, 0, 0, 0, 0];
 
     this.spendingChart = new Chart(ctx, {
       type: 'line',
@@ -208,7 +310,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
             ticks: {
               color: '#64748B',
               font: { size: 11 },
-              callback: (value: any) => `R${(value / 1000).toFixed(1)}k`
+              callback: (value: any) => `R${value.toLocaleString()}`
             }
           }
         }
@@ -216,105 +318,6 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Generate mock data for demonstration
-   */
-  private generateMockData(): Overview {
-    return {
-      currentBalance: 145680,
-      balanceChange: 12450,
-      monthlyIncome: 75000,
-      incomeGrowth: 8.5,
-      monthlyExpenses: 52340,
-      expenseGrowth: -3.2,
-      totalSavings: 89500,
-      savingsRate: 30.2,
-      largestExpense: 15000,
-      avgDailySpending: 1744.67,
-      activeBudgets: 5,
-      totalBudgets: 7,
-      transactionsThisMonth: 124,
-      recentTransactions: [
-        {
-          id: '1',
-          description: 'Grocery Shopping',
-          category: 'Food & Dining',
-          amount: 1250,
-          type: 'expense',
-          date: new Date()
-        },
-        {
-          id: '2',
-          description: 'Salary Deposit',
-          category: 'Income',
-          amount: 75000,
-          type: 'income',
-          date: new Date()
-        },
-        {
-          id: '3',
-          description: 'Electricity Bill',
-          category: 'Bills & Utilities',
-          amount: 2100,
-          type: 'expense',
-          date: new Date()
-        },
-        {
-          id: '4',
-          description: 'Freelance Payment',
-          category: 'Income',
-          amount: 8500,
-          type: 'income',
-          date: new Date()
-        },
-        {
-          id: '5',
-          description: 'Gas Station',
-          category: 'Transportation',
-          amount: 850,
-          type: 'expense',
-          date: new Date()
-        }
-      ],
-      budgets: [
-        { category: 'Food & Dining', spent: 4200, total: 6000, percentage: 70 },
-        { category: 'Transportation', spent: 2100, total: 3000, percentage: 70 },
-        { category: 'Entertainment', spent: 1800, total: 2000, percentage: 90 },
-        { category: 'Shopping', spent: 3200, total: 4000, percentage: 80 },
-        { category: 'Bills & Utilities', spent: 5500, total: 6000, percentage: 92 }
-      ],
-      goals: [
-        {
-          name: 'Emergency Fund',
-          icon: '🏦',
-          current: 45000,
-          target: 100000,
-          percentage: 45,
-          deadline: 'Dec 2024'
-        },
-        {
-          name: 'Vacation Trip',
-          icon: '✈️',
-          current: 18000,
-          target: 30000,
-          percentage: 60,
-          deadline: 'Jun 2024'
-        },
-        {
-          name: 'New Car',
-          icon: '🚗',
-          current: 125000,
-          target: 350000,
-          percentage: 36,
-          deadline: 'Mar 2025'
-        }
-      ]
-    };
-  }
-
-  /**
-   * Navigate to transactions page
-   */
   navigateToTransactions(): void {
     this.router.navigate(['/transactions']);
   }

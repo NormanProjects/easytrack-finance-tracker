@@ -7,6 +7,7 @@ import { DashboardSummary } from '../models/dashboard.model';
   providedIn: 'root'
 })
 export class DashboardService {
+  getDashboardSummary: any;
   constructor(private api: ApiService) {}
 
   getSummary(): Observable<DashboardSummary> {

@@ -1,6 +1,14 @@
 import { Transaction } from './transaction.model';
 
 export interface DashboardSummary {
+  totalSavings: number;
+  savingsRate: number;
+  avgDailySpending: number;
+  activeBudgets: number;
+  totalBudgets: number;
+  transactionsCount: number;
+  budgets: never[];
+  monthlyChange: number;
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpenses: number;

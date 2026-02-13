@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Account, AccountType } from '../../../core/models/account.model';
 import { AccountService } from '../../../core/services/account';
+import { ToastService } from '../../../core/services/toast';
 
 @Component({
   selector: 'app-account-list',
@@ -75,6 +76,7 @@ export class AccountsListComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
+    private toastService: ToastService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -87,8 +89,11 @@ export class AccountsListComponent implements OnInit {
    */
   loadAccounts(): void {
     this.isLoading = true;
+    console.log('Loading accounts...');
+    
     this.accountService.getAll().subscribe({
       next: (accounts) => {
+        console.log('Accounts loaded successfully:', accounts);
         this.accounts = accounts;
         this.calculateTotals();
         this.isLoading = false;
@@ -96,7 +101,7 @@ export class AccountsListComponent implements OnInit {
       error: (error) => {
         console.error('Error loading accounts:', error);
         this.isLoading = false;
-        this.showError('Failed to load accounts');
+        this.toastService.error('Failed to load accounts');
       }
     });
   }
@@ -149,6 +154,7 @@ export class AccountsListComponent implements OnInit {
     this.editingAccount = null;
     this.accountForm = this.getEmptyAccount();
     this.showForm = true;
+    console.log('Opening new account form');
   }
 
   /**
@@ -158,12 +164,15 @@ export class AccountsListComponent implements OnInit {
     this.editingAccount = account;
     this.accountForm = { ...account };
     this.showForm = true;
+    console.log('Editing account:', account);
   }
 
   /**
    * Save account (create or update)
    */
   saveAccount(): void {
+    console.log('Saving account:', this.accountForm);
+    
     if (!this.validateForm()) {
       return;
     }
@@ -172,29 +181,33 @@ export class AccountsListComponent implements OnInit {
 
     if (this.editingAccount && this.editingAccount.id) {
       // Update existing account
+      console.log('Updating account:', this.editingAccount.id);
       this.accountService.update(this.editingAccount.id, this.accountForm).subscribe({
-        next: () => {
-          this.showSuccess('Account updated successfully');
+        next: (updatedAccount) => {
+          console.log('Account updated successfully:', updatedAccount);
+          this.toastService.success('Account updated successfully!');
           this.closeForm();
           this.loadAccounts();
         },
         error: (error) => {
           console.error('Error updating account:', error);
-          this.showError('Failed to update account');
+          this.toastService.error(error.message || 'Failed to update account');
           this.isLoading = false;
         }
       });
     } else {
       // Create new account
+      console.log('Creating new account');
       this.accountService.create(this.accountForm).subscribe({
-        next: () => {
-          this.showSuccess('Account created successfully');
+        next: (createdAccount) => {
+          console.log('Account created successfully:', createdAccount);
+          this.toastService.success('Account created successfully!');
           this.closeForm();
           this.loadAccounts();
         },
         error: (error) => {
           console.error('Error creating account:', error);
-          this.showError('Failed to create account');
+          this.toastService.error(error.message || 'Failed to create account');
           this.isLoading = false;
         }
       });
@@ -205,21 +218,27 @@ export class AccountsListComponent implements OnInit {
    * Delete account
    */
   deleteAccount(account: Account): void {
-    if (!account.id) return;
+    if (!account.id) {
+      this.toastService.error('Cannot delete account without ID');
+      return;
+    }
 
     if (!confirm(`Are you sure you want to delete "${account.name}"? This action cannot be undone.`)) {
       return;
     }
 
+    console.log('Deleting account:', account.id);
     this.isLoading = true;
+    
     this.accountService.delete(account.id).subscribe({
       next: () => {
-        this.showSuccess('Account deleted successfully');
+        console.log('Account deleted successfully');
+        this.toastService.success('Account deleted successfully!');
         this.loadAccounts();
       },
       error: (error) => {
         console.error('Error deleting account:', error);
-        this.showError('Failed to delete account');
+        this.toastService.error(error.message || 'Failed to delete account');
         this.isLoading = false;
       }
     });
@@ -229,18 +248,24 @@ export class AccountsListComponent implements OnInit {
    * Toggle account active status
    */
   toggleAccountStatus(account: Account): void {
-    if (!account.id) return;
+    if (!account.id) {
+      this.toastService.error('Cannot update account without ID');
+      return;
+    }
 
     const updatedAccount = { ...account, active: !account.active };
     
+    console.log('Toggling account status:', account.id, 'to', updatedAccount.active);
+    
     this.accountService.update(account.id, updatedAccount).subscribe({
       next: () => {
-        this.showSuccess(`Account ${updatedAccount.active ? 'activated' : 'deactivated'}`);
+        console.log('Account status updated successfully');
+        this.toastService.success(`Account ${updatedAccount.active ? 'activated' : 'deactivated'}!`);
         this.loadAccounts();
       },
       error: (error) => {
         console.error('Error toggling account status:', error);
-        this.showError('Failed to update account status');
+        this.toastService.error(error.message || 'Failed to update account status');
       }
     });
   }
@@ -259,17 +284,17 @@ export class AccountsListComponent implements OnInit {
    */
   validateForm(): boolean {
     if (!this.accountForm.name || this.accountForm.name.trim() === '') {
-      this.showError('Account name is required');
+      this.toastService.error('Account name is required');
       return false;
     }
 
     if (!this.accountForm.type) {
-      this.showError('Account type is required');
+      this.toastService.error('Account type is required');
       return false;
     }
 
     if (this.accountForm.balance === null || this.accountForm.balance === undefined) {
-      this.showError('Balance is required');
+      this.toastService.error('Balance is required');
       return false;
     }
 
@@ -312,23 +337,5 @@ export class AccountsListComponent implements OnInit {
       return account.balance >= 0 ? 'positive' : 'negative';
     }
     return account.balance >= 0 ? 'positive' : 'negative';
-  }
-
-  /**
-   * Show success message
-   */
-  showSuccess(message: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      alert(message); // Replace with toast notification
-    }
-  }
-
-  /**
-   * Show error message
-   */
-  showError(message: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      alert(message); // Replace with toast notification
-    }
   }
 }
