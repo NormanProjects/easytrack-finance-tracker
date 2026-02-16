@@ -32,7 +32,7 @@ export class AuthService {
     this.currentUserSubject = new BehaviorSubject<User | null>(storedUser);
     this.currentUser$ = this.currentUserSubject.asObservable();
 
-    this.isAuthenticatedSubject = new BehaviorSubject<boolean>(!!storedUser);
+    this.isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasValidToken());
     this.isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   }
 
@@ -41,14 +41,13 @@ export class AuthService {
   }
 
   get isAuthenticated(): boolean {
-    return this.isAuthenticatedSubject.value;
+    return this.hasValidToken();  // ← FIXED: Check token, not just subject
   }
 
   /**
    * Register a new user
    */
   register(data: RegisterRequest): Observable<AuthResponse> {
-    // Mock registration - replace with real API call
     const mockResponse: AuthResponse = {
       token: 'mock-jwt-token-' + Date.now(),
       user: {
@@ -61,27 +60,19 @@ export class AuthService {
     };
 
     return of(mockResponse).pipe(
-      delay(1000),
+      delay(500),
       tap(response => {
-        console.log('Mock registration successful:', response);
+        console.log('✅ Mock registration successful:', response);
         this.handleAuthSuccess(response);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error))
     );
-
-    // Use this for real backend:
-    // return this.http.post<AuthResponse>(`${this.API_URL}/auth/register`, data)
-    //   .pipe(
-    //     tap(response => this.handleAuthSuccess(response)),
-    //     catchError((error: HttpErrorResponse) => this.handleError(error))
-    //   );
   }
 
   /**
    * Login user
    */
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    // Mock login - replace with real API call
     const mockResponse: AuthResponse = {
       token: 'mock-jwt-token-' + Date.now(),
       user: {
@@ -94,20 +85,13 @@ export class AuthService {
     };
 
     return of(mockResponse).pipe(
-      delay(1000),
+      delay(500),
       tap(response => {
-        console.log('Mock login successful:', response);
+        console.log('✅ Mock login successful:', response);
         this.handleAuthSuccess(response, credentials.rememberMe);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error))
     );
-
-    // Use this for real backend:
-    // return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials)
-    //   .pipe(
-    //     tap(response => this.handleAuthSuccess(response, credentials.rememberMe)),
-    //     catchError((error: HttpErrorResponse) => this.handleError(error))
-    //   );
   }
 
   /**
@@ -116,9 +100,10 @@ export class AuthService {
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem('token');
       localStorage.removeItem(this.USER_KEY);
-      sessionStorage.removeItem(this.TOKEN_KEY);
-      sessionStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem('currentUser');
+      sessionStorage.clear();
     }
 
     this.currentUserSubject.next(null);
@@ -132,7 +117,10 @@ export class AuthService {
    */
   getToken(): string | null {
     if (!this.isBrowser) return null;
-    return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
+    return localStorage.getItem(this.TOKEN_KEY) || 
+           localStorage.getItem('token') ||
+           sessionStorage.getItem(this.TOKEN_KEY) ||
+           sessionStorage.getItem('token');
   }
 
   /**
@@ -140,44 +128,35 @@ export class AuthService {
    */
   hasValidToken(): boolean {
     const token = this.getToken();
-    if (!token) return false;
+    if (!token) {
+      console.log('⚠️ hasValidToken: No token found');
+      return false;
+    }
 
+    // For mock tokens, just return true
+    if (token.startsWith('mock-jwt-token')) {
+      console.log('✅ hasValidToken: Mock token valid');
+      return true;
+    }
+
+    // For real JWT tokens, check expiration
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expiry = payload.exp * 1000;
-      return Date.now() < expiry;
+      const isValid = Date.now() < expiry;
+      console.log(isValid ? '✅ hasValidToken: Real token valid' : '❌ hasValidToken: Real token expired');
+      return isValid;
     } catch (error) {
-      // For mock tokens, just return true if token exists
-      return true;
+      console.error('❌ hasValidToken: Error validating token', error);
+      return false;
     }
   }
 
   /**
-   * Refresh token
+   * Get current user (synchronous)
    */
-  refreshToken(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/auth/refresh`, {})
-      .pipe(
-        tap(response => this.handleAuthSuccess(response)),
-        catchError((error: HttpErrorResponse) => this.handleError(error))
-      );
-  }
-
-  /**
-   * Get current user from backend
-   */
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/auth/me`)
-      .pipe(
-        tap(user => {
-          this.currentUserSubject.next(user);
-          this.isAuthenticatedSubject.next(true);
-        }),
-        catchError(error => {
-          this.logout();
-          return throwError(() => error);
-        })
-      );
+  getCurrentUser(): User | null {
+    return this.currentUserValue;
   }
 
   /**
@@ -188,11 +167,20 @@ export class AuthService {
 
     const storage = rememberMe ? localStorage : sessionStorage;
     
+    // Store token in multiple keys for compatibility
     storage.setItem(this.TOKEN_KEY, response.token);
+    storage.setItem('token', response.token);
+    
+    // Store user in multiple keys for compatibility
     storage.setItem(this.USER_KEY, JSON.stringify(response.user));
+    storage.setItem('currentUser', JSON.stringify(response.user));
 
     this.currentUserSubject.next(response.user);
     this.isAuthenticatedSubject.next(true);
+    
+    console.log('✅ Auth success! Token stored:', response.token.substring(0, 20) + '...');
+    console.log('✅ User stored:', response.user);
+    console.log('✅ isAuthenticated:', this.isAuthenticated);
   }
 
   /**
@@ -201,7 +189,10 @@ export class AuthService {
   private getStoredUser(): User | null {
     if (!this.isBrowser) return null;
 
-    const userStr = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
+    const userStr = localStorage.getItem(this.USER_KEY) || 
+                    localStorage.getItem('currentUser') ||
+                    sessionStorage.getItem(this.USER_KEY) ||
+                    sessionStorage.getItem('currentUser');
     if (!userStr) return null;
 
     try {
