@@ -35,26 +35,36 @@ public class AccountController {
     @PostMapping
     @Operation(summary = "Create a new account")
     public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        System.out.println("🔍 Create account requested");
+        System.out.println(" Create account requested");
 
         try {
-            // Check for mock user
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             System.out.println("   User: " + auth.getName());
+            System.out.println("   Account: " + accountDTO);
 
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - cannot create accounts in demo mode");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                System.out.println("    Mock user - returning mock account (not saved to DB)");
+
+                AccountDTO mockAccount = new AccountDTO();
+                mockAccount.setId(999L);
+                mockAccount.setName(accountDTO.getName());
+                mockAccount.setType(accountDTO.getType());
+                mockAccount.setBalance(accountDTO.getBalance());
+                mockAccount.setCurrency(accountDTO.getCurrency() != null ? accountDTO.getCurrency() : "ZAR");
+                mockAccount.setIsActive(true);  // ← FIXED: setIsActive not setActive
+
+                System.out.println("    Returning mock account");
+                return ResponseEntity.status(HttpStatus.CREATED).body(mockAccount);
             }
 
             User user = securityUtil.getAuthenticatedUser();
             Account account = accountMapper.toEntity(accountDTO, user);
             Account createdAccount = accountService.createAccount(account);
-            System.out.println("   ✅ Account created: " + createdAccount.getId());
+            System.out.println("    Account created: " + createdAccount.getId());
             return new ResponseEntity<>(accountMapper.toDTO(createdAccount), HttpStatus.CREATED);
 
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("    Error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -63,13 +73,13 @@ public class AccountController {
     @GetMapping("/{id}")
     @Operation(summary = "Get account by ID")
     public ResponseEntity<AccountDTO> getAccountById(@PathVariable Long id) {
-        System.out.println("🔍 Get account by ID: " + id);
+        System.out.println(" Get account by ID: " + id);
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - no accounts");
+                System.out.println("   ️ Mock user - no accounts");
                 return ResponseEntity.notFound().build();
             }
 
@@ -80,7 +90,7 @@ public class AccountController {
                     .orElse(ResponseEntity.notFound().build());
 
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("    Error: " + e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -94,9 +104,8 @@ public class AccountController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             System.out.println("   User: " + auth.getName());
 
-            // For mock users, return empty list
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - returning empty accounts list");
+                System.out.println("    Mock user - returning empty accounts list");
                 return ResponseEntity.ok(new ArrayList<>());
             }
 
@@ -104,11 +113,11 @@ public class AccountController {
             List<AccountDTO> accounts = accountService.getAccountsByUserId(userId).stream()
                     .map(accountMapper::toDTO)
                     .collect(Collectors.toList());
-            System.out.println("   ✅ Found " + accounts.size() + " accounts");
+            System.out.println("   Found " + accounts.size() + " accounts");
             return ResponseEntity.ok(accounts);
 
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("   Error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.ok(new ArrayList<>());
         }
@@ -117,13 +126,13 @@ public class AccountController {
     @GetMapping("/active")
     @Operation(summary = "Get active accounts for authenticated user")
     public ResponseEntity<List<AccountDTO>> getActiveAccounts() {
-        System.out.println("🔍 Get active accounts requested");
+        System.out.println("Get active accounts requested");
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - returning empty list");
+                System.out.println("    Mock user - returning empty list");
                 return ResponseEntity.ok(new ArrayList<>());
             }
 
@@ -131,11 +140,11 @@ public class AccountController {
             List<AccountDTO> accounts = accountService.getActiveAccountsByUserId(userId).stream()
                     .map(accountMapper::toDTO)
                     .collect(Collectors.toList());
-            System.out.println("   ✅ Found " + accounts.size() + " active accounts");
+            System.out.println("    Found " + accounts.size() + " active accounts");
             return ResponseEntity.ok(accounts);
 
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("    Error: " + e.getMessage());
             return ResponseEntity.ok(new ArrayList<>());
         }
     }
@@ -143,23 +152,23 @@ public class AccountController {
     @GetMapping("/total-balance")
     @Operation(summary = "Get total balance for authenticated user")
     public ResponseEntity<BigDecimal> getTotalBalance() {
-        System.out.println("🔍 Get total balance requested");
+        System.out.println(" Get total balance requested");
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - returning zero balance");
+                System.out.println("    Mock user - returning zero balance");
                 return ResponseEntity.ok(BigDecimal.ZERO);
             }
 
             Long userId = securityUtil.getAuthenticatedUserId();
             BigDecimal balance = accountService.getTotalBalance(userId);
-            System.out.println("   ✅ Total balance: " + balance);
+            System.out.println("    Total balance: " + balance);
             return ResponseEntity.ok(balance);
 
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("    Error: " + e.getMessage());
             return ResponseEntity.ok(BigDecimal.ZERO);
         }
     }
@@ -167,14 +176,25 @@ public class AccountController {
     @PutMapping("/{id}")
     @Operation(summary = "Update account")
     public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long id, @Valid @RequestBody AccountDTO accountDTO) {
-        System.out.println("🔍 Update account requested: " + id);
+        System.out.println(" Update account requested: " + id);
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - cannot update accounts in demo mode");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                System.out.println("    Mock user - returning mock update response (not saved to DB)");
+
+                AccountDTO mockAccount = new AccountDTO();
+                mockAccount.setId(id);
+                mockAccount.setName(accountDTO.getName());
+                mockAccount.setType(accountDTO.getType());
+                mockAccount.setBalance(accountDTO.getBalance());
+                mockAccount.setCurrency(accountDTO.getCurrency());
+                // ← FIXED: use setIsActive / getIsActive
+                mockAccount.setIsActive(accountDTO.getIsActive() != null ? accountDTO.getIsActive() : true);
+
+                System.out.println("    Returning mock updated account");
+                return ResponseEntity.ok(mockAccount);
             }
 
             Long userId = securityUtil.getAuthenticatedUserId();
@@ -184,14 +204,14 @@ public class AccountController {
 
             accountMapper.updateEntityFromDTO(accountDTO, account);
             Account updatedAccount = accountService.updateAccount(id, account);
-            System.out.println("   ✅ Account updated");
+            System.out.println("    Account updated");
             return ResponseEntity.ok(accountMapper.toDTO(updatedAccount));
 
         } catch (ResourceNotFoundException e) {
-            System.err.println("   ❌ Account not found: " + id);
+            System.err.println("    Account not found: " + id);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("    Error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -200,14 +220,14 @@ public class AccountController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete account")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
-        System.out.println("🔍 Delete account requested: " + id);
+        System.out.println(" Delete account requested: " + id);
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             if ("demo@test.com".equals(auth.getName())) {
-                System.out.println("   ⚠️ Mock user - cannot delete accounts in demo mode");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                System.out.println("    Mock user - returning mock delete response (not deleted from DB)");
+                return ResponseEntity.noContent().build();
             }
 
             Long userId = securityUtil.getAuthenticatedUserId();
@@ -216,14 +236,14 @@ public class AccountController {
                     .orElseThrow(() -> new ResourceNotFoundException("Account", "id", id));
 
             accountService.deleteAccount(id);
-            System.out.println("   ✅ Account deleted");
+            System.out.println("    Account deleted");
             return ResponseEntity.noContent().build();
 
         } catch (ResourceNotFoundException e) {
-            System.err.println("   ❌ Account not found: " + id);
+            System.err.println("    Account not found: " + id);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println("   ❌ Error: " + e.getMessage());
+            System.err.println("    Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

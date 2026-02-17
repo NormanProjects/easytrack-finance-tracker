@@ -47,11 +47,11 @@ public class DashboardController {
             System.out.println("   Real user - fetching from database");
             Long userId = securityUtil.getAuthenticatedUserId();
             DashboardSummaryDTO summary = dashboardService.getDashboardSummary(userId);
-            System.out.println("   ✅ Dashboard data retrieved successfully");
+            System.out.println("    Dashboard data retrieved successfully");
             return ResponseEntity.ok(summary);
 
         } catch (Exception e) {
-            System.err.println("   ❌ Error in getDashboardSummary: " + e.getMessage());
+            System.err.println("    Error in getDashboardSummary: " + e.getMessage());
             e.printStackTrace();
 
             // Return empty DTO as fallback
