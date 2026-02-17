@@ -36,7 +36,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Handle response
   return next(req).pipe(
     catchError((error) => {
-      console.error('❌ Request error:', error.status, error.message);
+      console.error(' Request error:', error.status, error.message);
       
       // DON'T auto-logout on 403 - let the backend accept the token first!
       // Only logout on 401 Unauthorized (invalid/expired token)

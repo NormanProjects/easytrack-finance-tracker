@@ -1,29 +1,45 @@
-import { Transaction } from './transaction.model';
 
 export interface DashboardSummary {
-  totalSavings: number;
-  savingsRate: number;
-  avgDailySpending: number;
-  activeBudgets: number;
-  totalBudgets: number;
-  transactionsCount: number;
-  budgets: never[];
-  monthlyChange: number;
-  totalBalance: number;
-  monthlyIncome: number;
-  monthlyExpenses: number;
-  activeGoals: number;
-  incomeChange: number;
-  expenseChange: number;
-  spendingBreakdown: SpendingCategory[];
-  recentTransactions: Transaction[];
-  safeToSpendDaily?: number;
-  daysRemainingInMonth?: number;
+  totalBalance: number | null;
+  monthlyIncome: number | null;
+  monthlyExpense: number | null;      
+  netIncome: number | null;
+  budgetSummary: BudgetSummary | null;
+  spendingComparison: SpendingComparison | null;
+  quickStats: QuickStats | null;
+  recentTransactions: TransactionSummary[] | null;
 }
 
-export interface SpendingCategory {
-  categoryName: string;
+export interface BudgetSummary {
+  totalBudget: number | null;
+  totalSpent: number | null;
+  remaining: number | null;
+  percentageUsed: number | null;
+  safeToSpendDaily: number | null;
+  daysRemainingInMonth: number;
+}
+
+export interface SpendingComparison {
+  currentMonthSpending: number | null;
+  previousMonthSpending: number | null;
+  difference: number | null;
+  percentageChange: number | null;
+  trend: 'UP' | 'DOWN' | 'STABLE' | null;
+}
+
+export interface QuickStats {
+  totalAccounts: number;
+  activeAccounts: number;
+  totalTransactions: number;
+  monthlyTransactions: number;
+  lastTransactionDate: string | null;
+}
+
+export interface TransactionSummary {
+  id: string;
+  description: string;
+  category: string;
   amount: number;
-  percentage: number;
-  color?: string;
+  type: 'income' | 'expense' | 'INCOME' | 'EXPENSE';
+  date: string;
 }

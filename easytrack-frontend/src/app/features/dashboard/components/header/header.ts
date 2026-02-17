@@ -39,7 +39,10 @@ export class HeaderComponent {
   }
 
   getUserInitials(): string {
-    if (!this.user) return 'U';
+    // CRITICAL FIX: Check if user exists first!
+    if (!this.user || !this.user.name) {
+      return 'U';  // Default fallback when user is null or has no name
+    }
     
     const names = this.user.name.split(' ').filter(n => n.length > 0);
     if (names.length >= 2) {

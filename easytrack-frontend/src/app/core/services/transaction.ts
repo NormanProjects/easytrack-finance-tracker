@@ -13,7 +13,7 @@ export interface Transaction {
   category: string;
   amount: number;
   type: 'income' | 'expense';
-  account?: string;
+  account?: string; 
   status: 'pending' | 'completed' | 'failed';
   notes?: string;
 }
@@ -56,7 +56,7 @@ export class TransactionService {
   create(formData: Transaction) {
     throw new Error('Method not implemented.');
   }
-  private readonly API_URL = `${environment.apiUrl}/api/transactions`;
+  private readonly API_URL = `${environment.apiUrl}/transactions`;
 
   constructor(private http: HttpClient) {}
 
