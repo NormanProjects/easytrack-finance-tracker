@@ -87,34 +87,34 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Chart initialised after data loads
+  
   }
 
   loadUserName(): void {
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        this.userName = user.firstName || user.name || 'User';
-        console.log('User name loaded:', this.userName);
-      }
-    });
-
-    const currentUser = this.authService.currentUserValue;
-    if (currentUser) {
-      this.userName = currentUser.firstName || currentUser.name || 'User';
+  this.authService.currentUser$.subscribe(user => {
+    if (user) {
+      this.userName = user.firstName || user.name || 'User';
+      console.log('User name loaded:', this.userName);
     }
+  });
 
-    if (this.userName === 'User') {
-      const storedUser = localStorage.getItem('easytrack_user');
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          this.userName = userData.firstName || userData.name || 'User';
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-        }
+  const currentUser = this.authService.currentUserValue;
+  if (currentUser) {
+    this.userName = currentUser.firstName || currentUser.name || 'User';
+  }
+
+  if (this.userName === 'User') {
+    const storedUser = localStorage.getItem('easytrack_user');
+    if (storedUser && storedUser !== 'undefined') {  // ✅ ADD THIS CHECK
+      try {
+        const userData = JSON.parse(storedUser);
+        this.userName = userData.firstName || userData.name || 'User';
+      } catch (error) {
+        console.error('Error parsing user data:', error);
       }
     }
   }
+}
 
   loadOverviewData(): void {
     this.isLoading = true;
@@ -128,7 +128,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
           // Direct fields
           currentBalance:        (data.totalBalance     as number) ?? 0,
           monthlyIncome:         (data.monthlyIncome    as number) ?? 0,
-          monthlyExpenses:       (data.monthlyExpense   as number) ?? 0,  // DTO = singular "monthlyExpense"
+          monthlyExpenses:       (data.monthlyExpense   as number) ?? 0,  
           totalSavings:          (data.netIncome        as number) ?? 0,
 
           // From spendingComparison

@@ -2,15 +2,16 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError, of, delay } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User, AuthResponse, LoginRequest, RegisterRequest } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8080/api';
+  private readonly API_URL = environment.apiUrl;
   private readonly TOKEN_KEY = 'easytrack_token';
   private readonly USER_KEY = 'easytrack_user';
   private isBrowser: boolean;
@@ -41,28 +42,17 @@ export class AuthService {
   }
 
   get isAuthenticated(): boolean {
-    return this.hasValidToken();  // ← FIXED: Check token, not just subject
+    return this.hasValidToken();
   }
 
   /**
-   * Register a new user
+   * Register a new user - CALLS REAL BACKEND
    */
   register(data: RegisterRequest): Observable<AuthResponse> {
-    const mockResponse: AuthResponse = {
-      token: 'mock-jwt-token-' + Date.now(),
-      user: {
-        id: '1',
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName
-      }
-    };
-
-    return of(mockResponse).pipe(
-      delay(500),
+    console.log(' Registering user:', data.email);
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/register`, data).pipe(
       tap(response => {
-        console.log('✅ Mock registration successful:', response);
+        console.log(' Registration successful:', response);
         this.handleAuthSuccess(response);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error))
@@ -70,24 +60,13 @@ export class AuthService {
   }
 
   /**
-   * Login user
+   * Login user - CALLS REAL BACKEND
    */
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    const mockResponse: AuthResponse = {
-      token: 'mock-jwt-token-' + Date.now(),
-      user: {
-        id: '1',
-        name: 'Demo User',
-        email: credentials.email,
-        firstName: 'Demo',
-        lastName: 'User'
-      }
-    };
-
-    return of(mockResponse).pipe(
-      delay(500),
+    console.log(' Logging in user:', credentials.email);
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials).pipe(
       tap(response => {
-        console.log('✅ Mock login successful:', response);
+        console.log(' Login successful:', response);
         this.handleAuthSuccess(response, credentials.rememberMe);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error))
@@ -98,6 +77,7 @@ export class AuthService {
    * Logout user
    */
   logout(): void {
+    console.log(' Logging out...');
     if (this.isBrowser) {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem('token');
@@ -129,13 +109,13 @@ export class AuthService {
   hasValidToken(): boolean {
     const token = this.getToken();
     if (!token) {
-      console.log('⚠️ hasValidToken: No token found');
+      console.log('hasValidToken: No token found');
       return false;
     }
 
-    // For mock tokens, just return true
+    // For mock tokens (backward compatibility with demo mode)
     if (token.startsWith('mock-jwt-token')) {
-      console.log('✅ hasValidToken: Mock token valid');
+      console.log(' hasValidToken: Mock token valid');
       return true;
     }
 
@@ -144,10 +124,10 @@ export class AuthService {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expiry = payload.exp * 1000;
       const isValid = Date.now() < expiry;
-      console.log(isValid ? '✅ hasValidToken: Real token valid' : '❌ hasValidToken: Real token expired');
+      console.log(isValid ? ' hasValidToken: Real token valid' : ' hasValidToken: Real token expired');
       return isValid;
     } catch (error) {
-      console.error('❌ hasValidToken: Error validating token', error);
+      console.error(' hasValidToken: Error validating token', error);
       return false;
     }
   }
@@ -167,20 +147,17 @@ export class AuthService {
 
     const storage = rememberMe ? localStorage : sessionStorage;
     
-    // Store token in multiple keys for compatibility
     storage.setItem(this.TOKEN_KEY, response.token);
     storage.setItem('token', response.token);
     
-    // Store user in multiple keys for compatibility
     storage.setItem(this.USER_KEY, JSON.stringify(response.user));
     storage.setItem('currentUser', JSON.stringify(response.user));
 
     this.currentUserSubject.next(response.user);
     this.isAuthenticatedSubject.next(true);
     
-    console.log('✅ Auth success! Token stored:', response.token.substring(0, 20) + '...');
-    console.log('✅ User stored:', response.user);
-    console.log('✅ isAuthenticated:', this.isAuthenticated);
+    console.log(' Auth success! Token stored:', response.token.substring(0, 20) + '...');
+    console.log(' User stored:', response.user);
   }
 
   /**
@@ -214,7 +191,7 @@ export class AuthService {
       errorMessage = error.error?.message || `Error Code: ${error.status}\nMessage: ${error.message}`;
     }
 
-    console.error('Auth Error:', errorMessage);
+    console.error(' Auth Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }
