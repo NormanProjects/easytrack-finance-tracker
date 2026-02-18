@@ -54,6 +54,7 @@ public class AccountService {
         account.setColor(accountDetails.getColor());
         account.setIsActive(accountDetails.getIsActive());
 
+
         return accountRepository.save(account);
     }
 

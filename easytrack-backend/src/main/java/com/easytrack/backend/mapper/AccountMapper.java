@@ -5,6 +5,8 @@ import com.easytrack.backend.entity.Account;
 import com.easytrack.backend.entity.User;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class AccountMapper {
 
@@ -15,7 +17,7 @@ public class AccountMapper {
         dto.setId(account.getId());
         dto.setUserId(account.getUser().getId());
         dto.setName(account.getName());
-        dto.setType(account.getType()); // Keep as enum
+        dto.setType(account.getType());
         dto.setBalance(account.getBalance());
         dto.setCurrency(account.getCurrency());
         dto.setIcon(account.getIcon());
@@ -32,12 +34,12 @@ public class AccountMapper {
         Account account = new Account();
         account.setUser(user);
         account.setName(dto.getName());
-        account.setType(dto.getType()); // Keep as enum
-        account.setBalance(dto.getBalance());
-        account.setCurrency(dto.getCurrency());
+        account.setType(dto.getType());
+        account.setBalance(dto.getBalance() != null ? dto.getBalance() : BigDecimal.ZERO);
+        account.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "ZAR");
         account.setIcon(dto.getIcon());
         account.setColor(dto.getColor());
-        account.setIsActive(dto.getIsActive());
+        account.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         return account;
     }
 
@@ -46,7 +48,7 @@ public class AccountMapper {
             account.setName(dto.getName());
         }
         if (dto.getType() != null) {
-            account.setType(dto.getType()); // Keep as enum
+            account.setType(dto.getType());
         }
         if (dto.getBalance() != null) {
             account.setBalance(dto.getBalance());
