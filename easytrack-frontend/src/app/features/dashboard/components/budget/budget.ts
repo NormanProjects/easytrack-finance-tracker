@@ -1,18 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BudgetService } from '../../../../core/services/budget';
+import { ToastService } from '../../../../core/services/toast';
+import { Budget, BudgetPeriod } from '../../../../core/models/budget.model';
 
-interface Budget {
-  id: string;
-  category: string;
-  limit: number;
-  spent: number;
-  percentage: number;
-  period: 'monthly' | 'weekly' | 'yearly';
-  transactionCount?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
 interface BudgetTip {
   type: 'success' | 'warning' | 'info';
   icon: string;
@@ -22,8 +14,9 @@ interface BudgetTip {
 
 interface Period {
   label: string;
-  value: 'monthly' | 'weekly' | 'yearly';
+  value: BudgetPeriod;
 }
+
 @Component({
   selector: 'app-budget',
   imports: [CommonModule, FormsModule],
@@ -32,13 +25,19 @@ interface Period {
 })
 export class BudgetComponent implements OnInit {
   budgets: Budget[] = [];
-  selectedPeriod: 'monthly' | 'weekly' | 'yearly' = 'monthly';
+  selectedPeriod: BudgetPeriod = BudgetPeriod.MONTHLY;
   isLoading: boolean = true;
+  showForm: boolean = false;
+  editingBudget: Budget | null = null;
+  Math = Math;
+
+  // Form data
+  budgetForm: Partial<Budget> = this.getEmptyBudget();
 
   periods: Period[] = [
-    { label: 'Weekly', value: 'weekly' },
-    { label: 'Monthly', value: 'monthly' },
-    { label: 'Yearly', value: 'yearly' }
+    { label: 'Weekly', value: BudgetPeriod.WEEKLY },
+    { label: 'Monthly', value: BudgetPeriod.MONTHLY },
+    { label: 'Yearly', value: BudgetPeriod.YEARLY }
   ];
 
   // Category colors and icons mapping
@@ -56,98 +55,42 @@ export class BudgetComponent implements OnInit {
     'Other': { color: '#6C757D', icon: '📌' }
   };
 
+  constructor(
+    private budgetService: BudgetService,
+    private toastService: ToastService
+  ) {}
+
   ngOnInit() {
     this.loadBudgets();
   }
 
   private loadBudgets() {
-    // Simulate API call with mock data
-    setTimeout(() => {
-      this.budgets = this.generateMockBudgets();
-      this.isLoading = false;
-    }, 800);
-  }
-
-  private generateMockBudgets(): Budget[] {
-    const now = new Date();
+    this.isLoading = true;
+    console.log('Loading budgets...');
     
-    return [
-      {
-        id: '1',
-        category: 'Food & Dining',
-        limit: 3000,
-        spent: 2450,
-        percentage: 82,
-        period: 'monthly',
-        transactionCount: 15,
-        createdAt: new Date(now.getFullYear(), now.getMonth(), 1),
-        updatedAt: now
+    // Load active budgets
+    this.budgetService.getActive().subscribe({
+      next: (budgets) => {
+        console.log('Budgets loaded successfully:', budgets);
+        this.budgets = budgets;
+        this.isLoading = false;
       },
-      {
-        id: '2',
-        category: 'Transportation',
-        limit: 1500,
-        spent: 800,
-        percentage: 53,
-        period: 'monthly',
-        transactionCount: 8,
-        createdAt: new Date(now.getFullYear(), now.getMonth(), 1),
-        updatedAt: now
-      },
-      {
-        id: '3',
-        category: 'Entertainment',
-        limit: 1000,
-        spent: 650,
-        percentage: 65,
-        period: 'monthly',
-        transactionCount: 5,
-        createdAt: new Date(now.getFullYear(), now.getMonth(), 1),
-        updatedAt: now
-      },
-      {
-        id: '4',
-        category: 'Shopping',
-        limit: 2000,
-        spent: 2100,
-        percentage: 105,
-        period: 'monthly',
-        transactionCount: 12,
-        createdAt: new Date(now.getFullYear(), now.getMonth(), 1),
-        updatedAt: now
-      },
-      {
-        id: '5',
-        category: 'Bills & Utilities',
-        limit: 2500,
-        spent: 1850,
-        percentage: 74,
-        period: 'monthly',
-        transactionCount: 6,
-        createdAt: new Date(now.getFullYear(), now.getMonth(), 1),
-        updatedAt: now
-      },
-      {
-        id: '6',
-        category: 'Healthcare',
-        limit: 1000,
-        spent: 250,
-        percentage: 25,
-        period: 'monthly',
-        transactionCount: 2,
-        createdAt: new Date(now.getFullYear(), now.getMonth(), 1),
-        updatedAt: now
+      error: (error) => {
+        console.error('Error loading budgets:', error);
+        this.isLoading = false;
+        this.budgets = []; // Clear budgets on error
+        this.toastService.error('Failed to load budgets');
       }
-    ];
+    });
   }
 
   // Summary calculations
   getTotalBudget(): number {
-    return this.budgets.reduce((sum, budget) => sum + budget.limit, 0);
+    return this.budgets.reduce((sum, budget) => sum + budget.amount, 0);
   }
 
   getTotalSpent(): number {
-    return this.budgets.reduce((sum, budget) => sum + budget.spent, 0);
+    return this.budgets.reduce((sum, budget) => sum + (budget.spent || 0), 0);
   }
 
   getRemaining(): number {
@@ -168,13 +111,17 @@ export class BudgetComponent implements OnInit {
   }
 
   getAlertCount(): number {
-    return this.budgets.filter(b => b.percentage >= 80).length;
+    return this.budgets.filter(b => this.getBudgetPercentage(b) >= 80).length;
+  }
+
+  getBudgetPercentage(budget: Budget): number {
+    if (budget.amount === 0) return 0;
+    return Math.round(((budget.spent || 0) / budget.amount) * 100);
   }
 
   // Period selection
-  selectPeriod(period: 'monthly' | 'weekly' | 'yearly') {
+  selectPeriod(period: BudgetPeriod) {
     this.selectedPeriod = period;
-    this.isLoading = true;
     this.loadBudgets();
   }
 
@@ -218,7 +165,7 @@ export class BudgetComponent implements OnInit {
     const daysPassed = new Date().getDate();
     
     if (daysPassed === 0) return 0;
-    return budget.spent / daysPassed;
+    return (budget.spent || 0) / daysPassed;
   }
 
   // Budget tips
@@ -226,7 +173,7 @@ export class BudgetComponent implements OnInit {
     const tips: BudgetTip[] = [];
     
     // Check for exceeded budgets
-    const exceededBudgets = this.budgets.filter(b => b.percentage >= 100);
+    const exceededBudgets = this.budgets.filter(b => this.getBudgetPercentage(b) >= 100);
     if (exceededBudgets.length > 0) {
       tips.push({
         type: 'warning',
@@ -238,7 +185,7 @@ export class BudgetComponent implements OnInit {
 
     // Check for approaching limits
     const warningBudgets = this.budgets.filter(
-      b => b.percentage >= 80 && b.percentage < 100
+      b => this.getBudgetPercentage(b) >= 80 && this.getBudgetPercentage(b) < 100
     );
     if (warningBudgets.length > 0) {
       tips.push({
@@ -250,7 +197,7 @@ export class BudgetComponent implements OnInit {
     }
 
     // Check for healthy budgets
-    const healthyBudgets = this.budgets.filter(b => b.percentage < 60);
+    const healthyBudgets = this.budgets.filter(b => this.getBudgetPercentage(b) < 60);
     if (healthyBudgets.length > 0) {
       tips.push({
         type: 'success',
@@ -285,30 +232,162 @@ export class BudgetComponent implements OnInit {
 
   // Actions
   openCreateBudget() {
-    // TODO: Open create budget modal
-    console.log('Open create budget modal');
+    this.editingBudget = null;
+    this.budgetForm = this.getEmptyBudget();
+    this.showForm = true;
+    console.log('Opening create budget form');
+  }
+
+  getEmptyBudget(): Partial<Budget> {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    return {
+      categoryId: 1, // Default to first category
+      amount: 0,
+      spent: 0,
+      period: BudgetPeriod.MONTHLY,
+      startDate: firstDay.toISOString().split('T')[0],
+      endDate: lastDay.toISOString().split('T')[0],
+      isActive: true
+    };
+  }
+
+  saveBudget() {
+    console.log('Saving budget:', this.budgetForm);
+    
+    if (!this.validateBudgetForm()) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    if (this.editingBudget && this.editingBudget.id) {
+      // Update existing budget
+      console.log('Updating budget:', this.editingBudget.id);
+      this.budgetService.update(this.editingBudget.id, this.budgetForm as Budget).subscribe({
+        next: (updatedBudget) => {
+          console.log('Budget updated successfully:', updatedBudget);
+          this.toastService.success('Budget updated successfully!');
+          this.closeForm();
+          this.loadBudgets();
+        },
+        error: (error) => {
+          console.error('Error updating budget:', error);
+          this.toastService.error(error.message || 'Failed to update budget');
+          this.isLoading = false;
+        }
+      });
+    } else {
+      // Create new budget
+      console.log('Creating new budget');
+      this.budgetService.create(this.budgetForm as Budget).subscribe({
+        next: (createdBudget) => {
+          console.log('Budget created successfully:', createdBudget);
+          this.toastService.success('Budget created successfully!');
+          this.closeForm();
+          this.loadBudgets();
+        },
+        error: (error) => {
+          console.error('Error creating budget:', error);
+          this.toastService.error(error.message || 'Failed to create budget');
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  validateBudgetForm(): boolean {
+    if (!this.budgetForm.categoryId || this.budgetForm.categoryId <= 0) {
+      this.toastService.error('Please select a category');
+      return false;
+    }
+
+    if (!this.budgetForm.amount || this.budgetForm.amount <= 0) {
+      this.toastService.error('Budget amount must be greater than 0');
+      return false;
+    }
+
+    if (!this.budgetForm.period) {
+      this.toastService.error('Please select a period');
+      return false;
+    }
+
+    if (!this.budgetForm.startDate || !this.budgetForm.endDate) {
+      this.toastService.error('Start and end dates are required');
+      return false;
+    }
+
+    return true;
+  }
+
+  closeForm() {
+    this.showForm = false;
+    this.editingBudget = null;
+    this.budgetForm = this.getEmptyBudget();
   }
 
   editBudget(budget: Budget) {
-    // TODO: Open edit budget modal
-    console.log('Edit budget:', budget);
+    this.editingBudget = budget;
+    this.budgetForm = { ...budget };
+    this.showForm = true;
+    console.log('Editing budget:', budget);
   }
 
   deleteBudget(budget: Budget) {
-    // TODO: Show confirmation dialog
-    if (confirm(`Are you sure you want to delete the budget for "${budget.category}"?`)) {
-      this.budgets = this.budgets.filter(b => b.id !== budget.id);
-      console.log('Deleted budget:', budget);
+    if (!budget.id) {
+      this.toastService.error('Cannot delete budget without ID');
+      return;
     }
+
+    if (confirm(`Are you sure you want to delete the budget for "Category ${budget.categoryId}"?`)) {
+      console.log('Deleting budget:', budget.id);
+      
+      // Don't set loading here - it will be set in loadBudgets()
+      this.budgetService.delete(budget.id).subscribe({
+        next: () => {
+          console.log('Budget deleted successfully');
+          this.toastService.success('Budget deleted successfully!');
+          // Remove from local array immediately for better UX
+          this.budgets = this.budgets.filter(b => b.id !== budget.id);
+          // Then refresh from server
+          this.loadBudgets();
+        },
+        error: (error) => {
+          console.error('Error deleting budget:', error);
+          this.toastService.error(error.error?.message || 'Failed to delete budget');
+        }
+      });
+    }
+  }
+
+  refreshBudgets() {
+    console.log('Refreshing budgets...');
+    this.isLoading = true;
+    
+    this.budgetService.refresh().subscribe({
+      next: () => {
+        console.log('Budgets refreshed successfully');
+        this.toastService.success('Budgets refreshed!');
+        this.loadBudgets();
+      },
+      error: (error) => {
+        console.error('Error refreshing budgets:', error);
+        this.toastService.error('Failed to refresh budgets');
+        this.isLoading = false;
+      }
+    });
   }
 
   openBudgetInsights() {
     // TODO: Open insights modal or page
     console.log('Open budget insights');
+    this.toastService.info('Budget insights feature coming soon!');
   }
 
   // Track by for performance
-  trackByBudgetId(index: number, budget: Budget): string {
-    return budget.id;
+  trackByBudgetId(index: number, budget: Budget): number {
+    return budget.id || index;
   }
 }

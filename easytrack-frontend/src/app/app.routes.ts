@@ -10,6 +10,7 @@ import { TransactionsComponent } from './features/dashboard/components/transacti
 import { SettingsComponent } from './features/dashboard/components/settings/settings';
 import { CategoriesListComponent } from './features/categories/category-list/category-list';
 import { AccountsListComponent } from './features/accounts/account-list/account-list';
+import { BudgetComponent } from './features/dashboard/components/budget/budget';
 
 export const routes: Routes = [
   // Landing page (home) - Public
@@ -59,6 +60,10 @@ export const routes: Routes = [
   {
     path: 'transactions',
     component: TransactionsComponent,
+    canActivate: [authGuard]  // Must be logged in
+  },
+  {path: 'budget',
+    component: BudgetComponent,
     canActivate: [authGuard]  // Must be logged in
   },
   {

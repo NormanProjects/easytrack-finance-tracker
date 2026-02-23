@@ -15,9 +15,11 @@ export interface Budget {
   period: BudgetPeriod;
   startDate: string;
   endDate: string;
-  active: boolean;
+  isActive: boolean;
   userId?: number;
   category?: Category;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BudgetProgress {
