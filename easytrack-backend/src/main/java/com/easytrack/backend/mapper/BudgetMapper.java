@@ -6,6 +6,8 @@ import com.easytrack.backend.entity.Category;
 import com.easytrack.backend.entity.User;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class BudgetMapper {
 
@@ -33,12 +35,13 @@ public class BudgetMapper {
         Budget budget = new Budget();
         budget.setUser(user);
         budget.setCategory(category);
-        budget.setAmount(dto.getAmount());
-        budget.setSpent(dto.getSpent());
+        //  Null-safety for all fields
+        budget.setAmount(dto.getAmount() != null ? dto.getAmount() : BigDecimal.ZERO);
+        budget.setSpent(dto.getSpent() != null ? dto.getSpent() : BigDecimal.ZERO);
         budget.setPeriod(dto.getPeriod());
         budget.setStartDate(dto.getStartDate());
         budget.setEndDate(dto.getEndDate());
-        budget.setIsActive(dto.getIsActive());
+        budget.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         return budget;
     }
 
@@ -48,6 +51,9 @@ public class BudgetMapper {
         }
         if (dto.getAmount() != null) {
             budget.setAmount(dto.getAmount());
+        }
+        if (dto.getSpent() != null) {
+            budget.setSpent(dto.getSpent());
         }
         if (dto.getPeriod() != null) {
             budget.setPeriod(dto.getPeriod());

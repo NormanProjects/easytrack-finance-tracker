@@ -4,9 +4,11 @@ import com.easytrack.backend.dto.AuthResponse;
 import com.easytrack.backend.dto.LoginRequest;
 import com.easytrack.backend.dto.RegisterRequest;
 import com.easytrack.backend.entity.User;
+import com.easytrack.backend.mapper.UserMapper;
 import com.easytrack.backend.repository.UserRepository;
 import com.easytrack.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -22,6 +25,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final UserMapper userMapper;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -52,11 +56,7 @@ public class AuthService {
 
         // Return response
         return new AuthResponse(
-                token,
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getFirstName(),
-                savedUser.getLastName()
+                token, userMapper.toDTO(savedUser)
         );
     }
 
@@ -83,11 +83,7 @@ public class AuthService {
 
             // Return response
             return new AuthResponse(
-                    token,
-                    user.getId(),
-                    user.getEmail(),
-                    user.getFirstName(),
-                    user.getLastName()
+                    token, userMapper.toDTO(user)
             );
 
         } catch (Exception e) {
