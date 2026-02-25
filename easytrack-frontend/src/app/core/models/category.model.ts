@@ -5,10 +5,12 @@ export enum CategoryType {
 
 export interface Category {
   id?: number;
+  userId?: number;
   name: string;
   type: CategoryType;
   icon?: string;
   color?: string;
-  isDefault: boolean;
-  userId?: number;
+  isDefault?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

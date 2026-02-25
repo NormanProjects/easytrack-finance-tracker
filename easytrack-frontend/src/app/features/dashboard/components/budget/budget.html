@@ -124,11 +124,11 @@
       <!-- Card Header -->
       <div class="budget-card-header">
         <div class="budget-info">
-          <div class="category-icon" [style.background]="getCategoryColor('Other')">
-            <span>{{ getCategoryIcon('Other') }}</span>
+          <div class="category-icon" [style.background]="getCategoryColor(budget.categoryId)">
+            <span>{{ getCategoryIcon(budget.categoryId) }}</span>
           </div>
           <div class="budget-details">
-            <h3 class="budget-name">Category {{ budget.categoryId }}</h3>
+            <h3 class="budget-name">{{ getCategoryName(budget.categoryId) }}</h3>
             <p class="budget-period">{{ budget.period | titlecase }} Budget</p>
           </div>
         </div>
@@ -259,20 +259,24 @@
       </div>
 
       <form class="budget-form" (ngSubmit)="saveBudget()">
-        <!-- Category ID -->
+        <!-- Category -->
         <div class="form-group">
-          <label for="categoryId">Category ID *</label>
-          <input
-            type="number"
+          <label for="categoryId">Category *</label>
+          <select
             id="categoryId"
             name="categoryId"
             [(ngModel)]="budgetForm.categoryId"
             required
-            min="1"
-            class="form-input"
-            placeholder="Enter category ID"
+            class="form-select"
           >
-          <span class="form-hint">Enter the category ID (temporary - category selector coming soon)</span>
+            <option [value]="null" disabled selected>Select a category</option>
+            <option [value]="category.id" *ngFor="let category of categories">
+              {{ category.icon }} {{ category.name }}
+            </option>
+          </select>
+          <span class="form-hint" *ngIf="categories.length === 0">
+            No categories available. Please create categories first.
+          </span>
         </div>
 
         <!-- Budget Amount -->

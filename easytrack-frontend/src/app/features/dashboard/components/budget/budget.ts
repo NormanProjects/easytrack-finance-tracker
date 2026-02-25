@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BudgetService } from '../../../../core/services/budget';
+import { CategoryService } from '../../../../core/services/category';
 import { ToastService } from '../../../../core/services/toast';
 import { Budget, BudgetPeriod } from '../../../../core/models/budget.model';
+import { Category } from '../../../../core/models/category.model';
 
 interface BudgetTip {
   type: 'success' | 'warning' | 'info';
@@ -25,6 +27,7 @@ interface Period {
 })
 export class BudgetComponent implements OnInit {
   budgets: Budget[] = [];
+  categories: Category[] = [];
   selectedPeriod: BudgetPeriod = BudgetPeriod.MONTHLY;
   isLoading: boolean = true;
   showForm: boolean = false;
@@ -57,29 +60,72 @@ export class BudgetComponent implements OnInit {
 
   constructor(
     private budgetService: BudgetService,
+    private categoryService: CategoryService,
     private toastService: ToastService
   ) {}
 
   ngOnInit() {
+    this.loadCategories();
     this.loadBudgets();
+    
+    // Fallback: If still loading after 10 seconds, reset
+    setTimeout(() => {
+      if (this.isLoading) {
+        console.warn('⚠️ Loading timeout - resetting state');
+        this.isLoading = false;
+        this.toastService.warning('Request timed out. Please try again.');
+      }
+    }, 10000);
+  }
+
+  private loadCategories() {
+    console.log('Loading categories...');
+    
+    this.categoryService.getAll().subscribe({
+      next: (categories) => {
+        console.log('✅ Categories loaded successfully:', categories);
+        this.categories = categories || [];
+      },
+      error: (error) => {
+        console.error('❌ Error loading categories:', error);
+        this.categories = [];
+        this.toastService.error('Failed to load categories');
+      }
+    });
   }
 
   private loadBudgets() {
     this.isLoading = true;
+    this.budgets = []; // Clear existing budgets
     console.log('Loading budgets...');
     
     // Load active budgets
     this.budgetService.getActive().subscribe({
       next: (budgets) => {
-        console.log('Budgets loaded successfully:', budgets);
-        this.budgets = budgets;
+        console.log('✅ Budgets loaded successfully:', budgets);
+        this.budgets = budgets || [];
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading budgets:', error);
+        console.error('❌ Error loading budgets:', error);
+        console.error('Error details:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
         this.isLoading = false;
-        this.budgets = []; // Clear budgets on error
-        this.toastService.error('Failed to load budgets');
+        this.budgets = [];
+        
+        // Show specific error message
+        if (error.status === 0) {
+          this.toastService.error('Cannot connect to server. Is the backend running?');
+        } else if (error.status === 401) {
+          this.toastService.error('Authentication failed. Please login again.');
+        } else if (error.status === 403) {
+          this.toastService.error('Access denied. Check your permissions.');
+        } else {
+          this.toastService.error(error.error?.message || 'Failed to load budgets');
+        }
       }
     });
   }
@@ -147,12 +193,33 @@ export class BudgetComponent implements OnInit {
   }
 
   // Category helpers
-  getCategoryColor(category: string): string {
-    return this.categoryConfig[category]?.color || '#6C757D';
+  getCategoryColor(categoryNameOrId: string | number): string {
+    // If it's a number (categoryId), find the category
+    if (typeof categoryNameOrId === 'number') {
+      const category = this.categories.find(c => c.id === categoryNameOrId);
+      if (category) {
+        return category.color || this.categoryConfig[category.name]?.color || '#6C757D';
+      }
+    }
+    // If it's a string (category name)
+    return this.categoryConfig[categoryNameOrId]?.color || '#6C757D';
   }
 
-  getCategoryIcon(category: string): string {
-    return this.categoryConfig[category]?.icon || '📌';
+  getCategoryIcon(categoryNameOrId: string | number): string {
+    // If it's a number (categoryId), find the category
+    if (typeof categoryNameOrId === 'number') {
+      const category = this.categories.find(c => c.id === categoryNameOrId);
+      if (category) {
+        return category.icon || this.categoryConfig[category.name]?.icon || '📌';
+      }
+    }
+    // If it's a string (category name)
+    return this.categoryConfig[categoryNameOrId]?.icon || '📌';
+  }
+
+  getCategoryName(categoryId: number): string {
+    const category = this.categories.find(c => c.id === categoryId);
+    return category ? category.name : `Category ${categoryId}`;
   }
 
   // Budget calculations
@@ -244,7 +311,7 @@ export class BudgetComponent implements OnInit {
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     return {
-      categoryId: 1, // Default to first category
+      categoryId: this.categories.length > 0 ? this.categories[0].id : undefined,
       amount: 0,
       spent: 0,
       period: BudgetPeriod.MONTHLY,
@@ -341,7 +408,8 @@ export class BudgetComponent implements OnInit {
       return;
     }
 
-    if (confirm(`Are you sure you want to delete the budget for "Category ${budget.categoryId}"?`)) {
+    const categoryName = this.getCategoryName(budget.categoryId);
+    if (confirm(`Are you sure you want to delete the budget for "${categoryName}"?`)) {
       console.log('Deleting budget:', budget.id);
       
       // Don't set loading here - it will be set in loadBudgets()

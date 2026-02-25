@@ -11,6 +11,7 @@ import { TransactionsComponent } from '../components/transactions/transactions';
 import { AnalyticsComponent } from '../components/analytics/analytics';
 import { SettingsComponent } from '../components/settings/settings';
 import { AccountsListComponent } from '../../accounts/account-list/account-list';
+import { CategoriesListComponent } from '../../categories/category-list/category-list';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,6 +20,7 @@ import { AccountsListComponent } from '../../accounts/account-list/account-list'
     HeaderComponent,
     OverviewComponent,
     BudgetComponent,
+    CategoriesListComponent,
     TransactionsComponent,
     AnalyticsComponent,
     SettingsComponent,
