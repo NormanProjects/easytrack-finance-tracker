@@ -87,12 +87,8 @@ This project demonstrates proficiency in modern full-stack development:
 *Real-time financial overview with "Safe to Spend" calculations*
 
 ### Transaction Management
-![Transactions](docs/assets/screenshots/transactions.png)
+![Transactions](easytrack-frontend/src/assets/images/transactions.png)
 *Full CRUD operations with advanced filtering*
-
-### CSV Import
-![CSV Import](docs/assets/screenshots/csv-import.png)
-*Bulk import with automatic deduplication and merchant name cleaning*
 
 ### Budget Tracking
 ![Budget](docs/assets/screenshots/budget.png)
