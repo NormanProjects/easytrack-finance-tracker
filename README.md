@@ -91,7 +91,7 @@ This project demonstrates proficiency in modern full-stack development:
 
 
 ### Budget Tracking
-![Budget](easytrack-frontend/src/assets/images/Analytics/budget.png)
+![Budget](easytrack-frontend/src/assets/images/Analytics.png)
 *Visual budget progress with spending trends*
 
 ---
