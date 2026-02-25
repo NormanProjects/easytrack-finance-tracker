@@ -84,11 +84,11 @@ This project demonstrates proficiency in modern full-stack development:
 
 ### Dashboard
 ![Dashboard](easytrack-frontend/src/assets/images/Dashboard.png)
-*Real-time financial overview with "Safe to Spend" calculations*
+
 
 ### Transaction Management
-![Transactions](easytrack-frontend/src/assets/images/transactions.png)
-*Full CRUD operations with advanced filtering*
+![Transactions](easytrack-frontend/src/assets/images/Transaction.png)
+
 
 ### Budget Tracking
 ![Budget](docs/assets/screenshots/budget.png)
