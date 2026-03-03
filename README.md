@@ -423,9 +423,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **Project Links:**
 - GitHub: https://github.com/NormanProjects/easytrack-finance-tracker
-- Live Demo: [https://easytrack.com](https://easytrack.com)
 - LinkedIn: www.linkedin.com/in/ntokozo-mashia-a152411a0
-- Portfolio: [https://yourportfolio.com](https://yourportfolio.com)
+
 
 ---
 
